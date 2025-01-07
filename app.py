@@ -1,6 +1,12 @@
 import streamlit as st
 import wikipedia
 import wolframalpha
+import google.generativeai as genai
+
+# Google Gemini API key
+GENAI_API_KEY = "AIzaSyABzyFOf6p7izi7VCWIb_Ypf-vZikqlh7o"  # Replace with your actual API key
+genai.configure(api_key=GENAI_API_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # WolframAlpha App ID
 APP_ID = "PHP8VP-Y7P8Y25TTW"  # Replace with your actual API key
@@ -26,6 +32,14 @@ def query_wolfram_alpha(query):
         return "No results found on Wolfram Alpha."
 
 
+def query_google_gemini(query):
+    try:
+        response = model.generate_content(query)
+        return response.text
+    except Exception as e:
+        return f"An error occurred while fetching from Google Gemini: {str(e)}"
+
+
 # Streamlit App
 st.set_page_config(page_title="Projekt S.A.N.A.", page_icon="🤖", layout="wide")
 
@@ -48,6 +62,7 @@ if st.button("Send"):
 
         # Process the input
         user_input = user_input.strip().lower()
+        
         if any(phrase in user_input for phrase in ["who are you", "what are you", "who is sana", "what is sana"]):
             response = (
                 "Hello! I'm S.A.N.A (Secure, Autonomous, Non-intrusive Assistant), "
@@ -57,8 +72,11 @@ if st.button("Send"):
         elif "search" in user_input:
             query = user_input.replace("search", "").strip()
             response = search_wikipedia(query)
+        elif "wolfram" in user_input:
+            query = user_input.replace("wolfram", "").strip()
+            response = query_wolfram_alpha(query)
         else:
-            response = query_wolfram_alpha(user_input)
+            response = query_google_gemini(user_input)
 
         # Add S.A.N.A.'s response to chat history
         chat_history.append(("S.A.N.A.", response))
