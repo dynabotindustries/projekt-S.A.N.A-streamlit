@@ -1,10 +1,6 @@
 import streamlit as st
 import wikipedia
 import wolframalpha
-import pyttsx3
-
-# Initialize Text-to-Speech engine
-engine = pyttsx3.init()
 
 # WolframAlpha App ID
 APP_ID = "PHP8VP-Y7P8Y25TTW"  # Replace with your actual API key
@@ -30,24 +26,12 @@ def query_wolfram_alpha(query):
         return "No results found on Wolfram Alpha."
 
 
-def speak(text):
-    """Use text-to-speech to speak the provided text."""
-    engine.say(text)
-    engine.runAndWait()
-
-
 # Streamlit App
 st.set_page_config(page_title="Projekt S.A.N.A.", page_icon="🤖", layout="wide")
 
 # Sidebar
 st.sidebar.title("S.A.N.A. Settings")
-voice_option = st.sidebar.selectbox("Voice", ["Male", "Female"])
-st.sidebar.markdown("Change the voice type for S.A.N.A.")
-
-if voice_option == "Male":
-    engine.setProperty("voice", engine.getProperty("voices")[0].id)
-else:
-    engine.setProperty("voice", engine.getProperty("voices")[1].id)
+st.sidebar.markdown("Modify settings for S.A.N.A.")
 
 # Main App
 st.title("Projekt S.A.N.A.")
@@ -73,17 +57,11 @@ if st.button("Send"):
         elif "search" in user_input:
             query = user_input.replace("search", "").strip()
             response = search_wikipedia(query)
-        elif "play" in user_input:
-            query = user_input.replace("play", "").strip()
-            response = f"Cannot play media in Streamlit mode. Searched: {query}"
-        elif "close" in user_input:
-            response = "Cannot close tabs in Streamlit mode."
         else:
             response = query_wolfram_alpha(user_input)
 
         # Add S.A.N.A.'s response to chat history
         chat_history.append(("S.A.N.A.", response))
-        speak(response)
 
 # Display chat history
 for sender, message in chat_history:
