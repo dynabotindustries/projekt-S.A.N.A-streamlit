@@ -39,20 +39,20 @@ def query_google_gemini(query, context):
         return f"An error occurred while fetching from Google Gemini: {str(e)}"
 
 # Streamlit App
-st.set_page_config(page_title="Projekt I.R.I.S", page_icon="🤖", layout="wide")
+st.set_page_config(page_title="Projekt S.A.N.A", page_icon="🤖", layout="wide")
 
 # Sidebar
 with st.sidebar:
-    st.title("I.R.I.S Settings")
+    st.title("S.A.N.A Settings")
     st.markdown("⚙️ **Customize your assistant experience**")
     st.markdown("---")
-    st.markdown("Use the features below to interact with I.R.I.S:")
+    st.markdown("Use the features below to interact with S.A.N.A:")
     st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat")
 
 # Main App
-st.title("🤖 Projekt I.R.I.S")
+st.title("🤖 Projekt S.A.N.A")
 st.markdown("""
-**I.R.I.S** (*Intelligent Resourceful Interactive System*) is a secure, autonomous, and non-intrusive virtual assistant. 
+**S.A.N.A** (*Intelligent Resourceful Interactive System*) is a secure, autonomous, and non-intrusive virtual assistant. 
 Feel free to ask me anything! 😊
 """)
 st.markdown("---")
@@ -84,7 +84,7 @@ if st.button("Send"):
             response = query_google_gemini(user_input, st.session_state["context"])
 
         # Add response to chat history
-        st.session_state["chat_history"].append(("I.R.I.S", response))
+        st.session_state["chat_history"].append(("S.A.N.A", response))
 
         # Update context for chat-based features
         st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
@@ -96,7 +96,7 @@ for sender, message in st.session_state["chat_history"]:
     if sender == "You":
         st.markdown(f"**🧑‍💻 You:** {message}")
     else:
-        st.markdown(f"**🤖 I.R.I.S:** {message}")
+        st.markdown(f"**🤖 S.A.N.A:** {message}")
 
 # Clear History Button
 st.write("---")
