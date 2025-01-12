@@ -4,12 +4,12 @@ import wolframalpha
 import google.generativeai as genai
 
 # Google Gemini API key
-GENAI_API_KEY = st.secrets[GENAI_API_KEY]  # Replace with your actual API key
+GENAI_API_KEY = st.secrets['GENAI_API_KEY']  # Replace with your actual API key
 genai.configure(api_key=GENAI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 # WolframAlpha App ID
-APP_ID = st.secrets[APP_ID]  # Replace with your actual API key
+APP_ID = st.secrets['APP_ID']  # Replace with your actual API key
 
 
 # Functions for the assistant
