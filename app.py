@@ -6,7 +6,7 @@ import google.generativeai as genai
 # Google Gemini API key
 GENAI_API_KEY = st.secrets["GENAI_API_KEY"]  # Replace with your actual API key
 genai.configure(api_key=GENAI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-2.0-flash-exp")
 
 # WolframAlpha App ID
 APP_ID = st.secrets["APP_ID"]  # Replace with your actual API key
