@@ -52,7 +52,7 @@ with st.sidebar:
 # Main App
 st.title("🤖 Projekt S.A.N.A")
 st.markdown("""
-**S.A.N.A** (*Intelligent Resourceful Interactive System*) is a secure, autonomous, and non-intrusive virtual assistant. 
+**S.A.N.A** is a secure, autonomous, and non-intrusive virtual assistant. 
 Feel free to ask me anything! 😊
 """)
 st.markdown("---")
