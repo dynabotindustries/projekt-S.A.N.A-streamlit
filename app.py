@@ -91,7 +91,7 @@ def query_google_gemini(query, context):
         return f"An error occurred while fetching from Google Gemini: {str(e)}"
 
 # Streamlit App
-st.set_page_config(page_title="Projekt S.A.N.A", page_icon="🤖", layout="wide")
+st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
 
 # Sidebar
 with st.sidebar:
