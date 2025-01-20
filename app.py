@@ -103,7 +103,7 @@ col1, mid, col2 = st.columns([1,1,20])
 with col1:
     st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=60)
 with col2:
-    st.write('Projekt S.A.N.A')
+    st.title('Projekt S.A.N.A')
 st.markdown("""
 **S.A.N.A** is a secure, autonomous, and non-intrusive virtual assistant. 
 Feel free to ask me anything! 😊
