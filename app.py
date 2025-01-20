@@ -47,31 +47,44 @@ model = genai.GenerativeModel(
 # WolframAlpha App ID
 APP_ID = st.secrets["APP_ID"]  # Replace with your actual API key
 
-# Functions for the assistant
+## Functions for the assistant
+
+# Function to search through Wikipedia
 def search_wikipedia(query):
     try:
+        # return a summary of all content found on Wikipedia if the query successfully parses information
         result = wikipedia.summary(query, sentences=2)
         return result
     except wikipedia.exceptions.DisambiguationError as e:
+        # return an error if prompt is ambiguous
         return "Multiple meanings detected. Please specify: " + ", ".join(e.options[:5])
     except wikipedia.exceptions.PageError:
+        # return an error if no matching results are found
         return "No results found on Wikipedia."
 
+# Function to query WolframAlpha
 def query_wolfram_alpha(query):
+    # Initialize the client
     client = wolframalpha.Client(APP_ID)
     try:
+        # return the result upon a successful query
         res = client.query(query)
         return next(res.results).text
     except Exception:
+        # return an error upon any exception
         return "No results found on Wolfram Alpha."
 
+# Function to query Gemini
 def query_google_gemini(query, context):
     try:
         # Combine context with the current query
         conversation_input = context + f"\nUser: {query}\nAssistant:"
+        # Generate a response using the specified Gemini Model
         response = model.generate_content(conversation_input)
+        # return the generated response
         return response.text
     except Exception as e:
+        # return an error upon any exception
         return f"An error occurred while fetching from Google Gemini: {str(e)}"
 
 # Streamlit App
@@ -93,11 +106,11 @@ Feel free to ask me anything! 😊
 """)
 st.markdown("---")
 
-# Chat Interaction
+# Initialize session variables
 if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = []
+    st.session_state["chat_history"] = []   # Initialize chat history
 if "context" not in st.session_state:
-    st.session_state["context"] = ""
+    st.session_state["context"] = ""   # Initialize context
 
 # Feature Selection Dropdown
 feature = st.selectbox("Select a feature to use:", 
@@ -108,7 +121,7 @@ user_input = st.text_input("💬 Type your query below:", placeholder="Ask anyth
 
 if st.button("Send"):
     if user_input:
-        # Add user message to chat history
+        # Add user message to chat history as `You`
         st.session_state["chat_history"].append(("You", user_input))
 
         # Process based on selected feature
@@ -116,10 +129,10 @@ if st.button("Send"):
             response = search_wikipedia(user_input)
         elif feature == "Wolfram Alpha Queries":
             response = query_wolfram_alpha(user_input)
-        else:  # General Chat using Google Gemini
+        elif feature == "General Chat":
             response = query_google_gemini(user_input, st.session_state["context"])
 
-        # Add response to chat history
+        # Add response to chat history as `S.A.N.A.`
         st.session_state["chat_history"].append(("S.A.N.A", response))
 
         # Update context for chat-based features
@@ -128,11 +141,13 @@ if st.button("Send"):
 # Display Chat History
 st.markdown("### 💬 Chat History")
 st.write("---")
-for sender, message in st.session_state["chat_history"]:
+for sender, message in st.session_state["chat_history"]:   # Parse session chat history tuple as (sender, message)
     if sender == "You":
         st.markdown(f"**🧑‍💻 You:** {message}")
-    else:
+    elif sender == "S.A.N.A":
         st.markdown(f"**🤖 S.A.N.A:** {message}")
+    else:
+        st.markdown(f"**❗Unknown Sender:** {message}")
 
 # Clear History Button
 st.write("---")
