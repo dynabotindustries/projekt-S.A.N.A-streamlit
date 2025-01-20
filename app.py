@@ -101,12 +101,12 @@ with st.sidebar:
 # Main App
 
 # Make title columns
-col1, mid, col2 = st.columns([1,1,20])
+tcol1, tmid, tcol2 = st.columns([1,1,20])
 # Add logo to column 1
-with col1:
+with tcol1:
     st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=80)
 # Add title to column 2
-with col2:
+with tcol2:
     st.title('Projekt S.A.N.A')
 
 # Add description
@@ -155,7 +155,14 @@ for sender, message in st.session_state["chat_history"]:   # Parse session chat 
     if sender == "You":
         st.markdown(f"**🧑‍💻 You:** {message}")
     elif sender == "S.A.N.A":
-        st.markdown(f"**🤖 S.A.N.A:** {message}")
+        # Make response columns
+        rcol1, rmid, rcol2 = st.columns([1,1,20])
+        # Add logo to column 1
+        with rcol1:
+            st.image('https://avatars.githubusercontent.com/u/175069629?v=4')
+        # Add title to column 2
+        with rcol2:
+            st.markdown(f"**S.A.N.A:** {message}")
     else:
         st.markdown(f"**❗Unknown Sender:** {message}")
 
