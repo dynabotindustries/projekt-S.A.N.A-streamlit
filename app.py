@@ -104,7 +104,7 @@ with st.sidebar:
 col1, mid, col2 = st.columns([1,1,20])
 # Add logo to column 1
 with col1:
-    st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=40)
+    st.image('https://avatars.githubusercontent.com/u/175069629?v=4')
 # Add title to column 2
 with col2:
     st.title('Projekt S.A.N.A')
