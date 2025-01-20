@@ -47,6 +47,9 @@ model = genai.GenerativeModel(
 # WolframAlpha App ID
 APP_ID = st.secrets["APP_ID"]  # Replace with your actual API key
 
+# APP logo
+logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
+
 ## Functions for the assistant
 
 # Function to search through Wikipedia
@@ -100,16 +103,8 @@ with st.sidebar:
 
 # Main App
 
-# Make title columns
-#tcol1, tmid, tcol2 = st.columns([1,1,20])
-# Add logo to column 1
-#with tcol1:
-    #st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=80)
-# Add title to column 2
-#with tcol2:
-    #st.title('Projekt S.A.N.A')
-
-st.markdown(f"<h1><img src='https://avatars.githubusercontent.com/u/175069629?v=4' width=70 style='display:inline-block; margin-right:15px'></img><b>Projekt S.A.N.A:</b></h1>", unsafe_allow_html=True)
+# Logo and Title in HTML format for inline logo
+st.markdown(f"<h1><img src='{logo}' width=70 style='display:inline-block; margin-right:15px'></img><b>Projekt S.A.N.A:</b></h1>", unsafe_allow_html=True)
 
 # Add description
 st.markdown("""
@@ -159,7 +154,7 @@ for sender, message in st.session_state["chat_history"]:   # Parse session chat 
         st.markdown(f"**🧑‍💻 You:** {message}")
     elif sender == "S.A.N.A":
         # Render logo and the response inline
-        st.markdown(f"<img src='https://avatars.githubusercontent.com/u/175069629?v=4' width=20 style='display:inline-block; margin-right:10px'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
+        st.markdown(f"<img src='{logo}' width=20 style='display:inline-block; margin-right:10px'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
     else:
         st.markdown(f"**❗Unknown Sender:** {message}")
 
