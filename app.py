@@ -99,11 +99,17 @@ with st.sidebar:
     st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat")
 
 # Main App
+
+# Make title columns
 col1, mid, col2 = st.columns([1,1,20])
+# Add logo to column 1
 with col1:
-    st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=60)
+    st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=40)
+# Add title to column 2
 with col2:
     st.title('Projekt S.A.N.A')
+
+# Add description
 st.markdown("""
 **S.A.N.A** is a secure, autonomous, and non-intrusive virtual assistant. 
 Feel free to ask me anything! 😊
