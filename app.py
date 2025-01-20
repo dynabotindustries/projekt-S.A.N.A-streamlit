@@ -99,7 +99,7 @@ with st.sidebar:
     st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat")
 
 # Main App
-col1, mid, col2 = st.beta_columns([1,1,20])
+col1, mid, col2 = st.columns([1,1,20])
 with col1:
     st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=60)
 with col2:
