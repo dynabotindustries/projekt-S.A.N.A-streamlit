@@ -156,13 +156,13 @@ for sender, message in st.session_state["chat_history"]:   # Parse session chat 
         st.markdown(f"**🧑‍💻 You:** {message}")
     elif sender == "S.A.N.A":
         # Make response columns
-        rcol1, rcol2 = st.columns([1,20])
+        # rcol1, rcol2 = st.columns([1,20])
         # Add logo to column 1
-        with rcol1:
-            st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=35)
+        # with rcol1:
+            # st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=35)
         # Add title to column 2
-        with rcol2:
-            st.markdown(f"**S.A.N.A:** {message}")
+        # with rcol2:
+        st.markdown(f"<img src='https://avatars.githubusercontent.com/u/175069629?v=4' style='display:inline-block'></img><b>S.A.N.A:<b> {message}")
     else:
         st.markdown(f"**❗Unknown Sender:** {message}")
 
