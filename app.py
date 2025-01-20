@@ -109,7 +109,7 @@ with st.sidebar:
 #with tcol2:
     #st.title('Projekt S.A.N.A')
 
-st.markdown(f"<img src='https://avatars.githubusercontent.com/u/175069629?v=4' width=70 style='display:inline-block; margin-right:15px'></img><h1><b>Projekt S.A.N.A:</b></h1>", unsafe_allow_html=True)
+st.markdown(f"<h1><img src='https://avatars.githubusercontent.com/u/175069629?v=4' width=70 style='display:inline-block; margin-right:15px'></img><b>Projekt S.A.N.A:</b></h1>", unsafe_allow_html=True)
 
 # Add description
 st.markdown("""
