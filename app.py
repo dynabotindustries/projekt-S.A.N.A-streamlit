@@ -159,7 +159,7 @@ for sender, message in st.session_state["chat_history"]:   # Parse session chat 
         rcol1, rcol2 = st.columns([1,20])
         # Add logo to column 1
         with rcol1:
-            st.image('https://avatars.githubusercontent.com/u/175069629?v=4')
+            st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=35)
         # Add title to column 2
         with rcol2:
             st.markdown(f"**S.A.N.A:** {message}")
