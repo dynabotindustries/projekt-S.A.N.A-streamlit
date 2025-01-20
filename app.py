@@ -156,7 +156,7 @@ for sender, message in st.session_state["chat_history"]:   # Parse session chat 
         st.markdown(f"**🧑‍💻 You:** {message}")
     elif sender == "S.A.N.A":
         # Make response columns
-        rcol1, rcol2 = st.columns([1,1,20])
+        rcol1, rcol2 = st.columns([1,20])
         # Add logo to column 1
         with rcol1:
             st.image('https://avatars.githubusercontent.com/u/175069629?v=4')
