@@ -162,7 +162,7 @@ for sender, message in st.session_state["chat_history"]:   # Parse session chat 
             # st.image('https://avatars.githubusercontent.com/u/175069629?v=4', width=35)
         # Add title to column 2
         # with rcol2:
-        st.markdown(f"<img src='https://avatars.githubusercontent.com/u/175069629?v=4' style='display:inline-block'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=False)
+        st.markdown(f"<img src='https://avatars.githubusercontent.com/u/175069629?v=4' style='display:inline-block'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
     else:
         st.markdown(f"**❗Unknown Sender:** {message}")
 
