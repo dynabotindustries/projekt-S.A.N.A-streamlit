@@ -48,7 +48,7 @@ model = genai.GenerativeModel(
 APP_ID = st.secrets["APP_ID"]  # Replace with your actual API key
 
 # APP logo
-logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
+logo = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsulcdn.azureedge.net%2Fbiz-live%2Fimg%2F452578-2712466-28022017141422.jpeg&f=1&nofb=1&ipt=42a20b04f760c91a996be135607e412eca2a1b29d3b555dd27fbb8473916f93b&ipo=images"
 
 ## Functions for the assistant
 
@@ -91,12 +91,12 @@ def query_google_gemini(query, context):
         return f"An error occurred while fetching from Google Gemini: {str(e)}"
 
 # Streamlit App
-st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
+st.set_page_config(page_title="Projekt S.A.N.A for Schools", page_icon=logo, layout="wide")
 
 # Sidebar
 with st.sidebar:
     st.title("S.A.N.A Settings")
-    st.markdown("⚙️ **Customize your assistant experience**")
+    st.markdown("⚙️ **Customize your assistant experience (coming soon!)**")
     st.markdown("---")
     st.markdown("Use the features below to interact with S.A.N.A:")
     st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat")
