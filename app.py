@@ -71,10 +71,10 @@ st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
 # Sidebar
 with st.sidebar:
     st.title("S.A.N.A Settings")
-    st.markdown("⚙️ **Customize your assistant experience**")
+    st.markdown("⚙️ **Customize your assistant experience (Coming Soon!)**")
     st.markdown("---")
     st.markdown("Use the features below to interact with S.A.N.A:")
-    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat")
+    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat(No Conversations Recorded by any Party Concerned)")
 
 # Main App
 
