@@ -137,7 +137,7 @@ with st.sidebar:
 # Main App
 
 # Logo and Title in HTML format for inline logo
-st.markdown(f"<h1><img src='{logo}' width=70 style='display:inline-block; margin-right:15px'></img><b>Projekt S.A.N.A fir RMK School:</b></h1>", unsafe_allow_html=True)
+st.markdown(f"<h1><img src='{logo}' width=70 style='display:inline-block; margin-right:15px'></img><b>Projekt S.A.N.A for RMK School:</b></h1>", unsafe_allow_html=True)
 
 # Add description
 st.markdown("""
