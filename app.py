@@ -55,6 +55,13 @@ def query_google_gemini(query, context):
     except Exception as e:
         return f"An error occurred while fetching from Google Gemini: {str(e)}"
 
+def summarize_file_with_gemini(file_content):
+    try:
+        response = model.generate_content(file_content)
+        return response.text
+    except Exception as e:
+        return f"An error occurred while generating summary with Gemini: {str(e)}"
+
 # Streamlit App
 st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
 
@@ -82,9 +89,41 @@ if "context" not in st.session_state:
 
 # Feature Selection Dropdown
 feature = st.selectbox("Select a feature to use:", 
-    ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"], index=0)
+    ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "File Upload"], index=0)
 
-# User Input Section
+# Display Chat History
+st.markdown("### 💬 Chat History")
+st.write("---")
+for sender, message in st.session_state["chat_history"]:   # Parse session chat history tuple as (sender, message)
+    if sender == "You":
+        # Render user prompt
+        st.markdown(f"**🧑‍💻 You:** {message}")
+    elif sender == "S.A.N.A":
+        # Render logo and the response inline
+        st.markdown(f"<img src='{logo}' width=20 style='display:inline-block; margin-right:10px'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
+    else:
+        st.markdown(f"**❗Unknown Sender:** {message}")
+
+# File upload section for PDF/TXT
+if feature == "File Upload":
+    uploaded_file = st.file_uploader("Upload a PDF/TXT file for summarization", type=["pdf", "txt"])
+    if uploaded_file is not None:
+        if uploaded_file.type == "application/pdf":
+            # Extract text from PDF and send it to Gemini for summarization
+            pdf_reader = PdfReader(uploaded_file)
+            file_content = ""
+            for page in pdf_reader.pages:
+                file_content += page.extract_text()
+            summary = summarize_file_with_gemini(file_content)
+        elif uploaded_file.type == "text/plain":
+            # Read text file and send content to Gemini for summarization
+            file_content = uploaded_file.read().decode("utf-8")
+            summary = summarize_file_with_gemini(file_content)
+        
+        st.markdown("### 📄 File Summary:")
+        st.write(summary)
+
+# User Input Section (Text Input Box)
 user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
 
 if st.button("Send") or user_input:  # If "Send" button is pressed or user input is not empty
@@ -105,16 +144,3 @@ if st.button("Send") or user_input:  # If "Send" button is pressed or user input
 
         # Update context for chat-based features
         st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-
-# Display Chat History
-st.markdown("### 💬 Chat History")
-st.write("---")
-for sender, message in st.session_state["chat_history"]:   # Parse session chat history tuple as (sender, message)
-    if sender == "You":
-        # Render user prompt
-        st.markdown(f"**🧑‍💻 You:** {message}")
-    elif sender == "S.A.N.A":
-        # Render logo and the response inline
-        st.markdown(f"<img src='{logo}' width=20 style='display:inline-block; margin-right:10px'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
-    else:
-        st.markdown(f"**❗Unknown Sender:** {message}")
