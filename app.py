@@ -122,6 +122,11 @@ if feature == "File Upload":
         
         st.markdown("### 📄 File Summary:")
         st.write(summary)
+        
+        # Set the response from the file summary
+        response = summary
+    else:
+        response = ""  # Default empty response
 
 # User Input Section (Text Input Box)
 user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
