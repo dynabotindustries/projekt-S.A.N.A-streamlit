@@ -109,10 +109,11 @@ for sender, message in st.session_state["chat_history"]:
 
 # User Input Section at the Bottom
 # User Input Section at the Bottom
+# User Input Section at the Bottom
 st.markdown("---")
 user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input")
 
-if st.button("Send") or user_input:  # Trigger the button click on "Enter" press
+if st.button("Send") or (user_input and st.session_state.get("enter_pressed", False)):
     if user_input:
         st.session_state["chat_history"].append(("You", user_input))
         if feature == "Wikipedia Search":
@@ -124,6 +125,7 @@ if st.button("Send") or user_input:  # Trigger the button click on "Enter" press
         st.session_state["chat_history"].append(("S.A.N.A", response))
         st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
         st.session_state["user_input"] = ""  # Reset input after sending message
+        st.session_state["enter_pressed"] = False  # Reset enter pressed state
 
 # JavaScript for triggering Enter key event to submit
 st.markdown(
@@ -137,6 +139,11 @@ st.markdown(
     </script>""",
     unsafe_allow_html=True
 )
+
+# Handling Enter Key Press for state
+if st.session_state.get("enter_pressed", False):
+    st.session_state["enter_pressed"] = False
+
 
 
 # Clear History Button
