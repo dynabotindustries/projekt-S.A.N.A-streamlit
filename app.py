@@ -108,37 +108,36 @@ for sender, message in st.session_state["chat_history"]:
         st.markdown(f"<img src='{logo}' width=20 style='display:inline-block; margin-right:10px'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
 
 # User Input Section at the Bottom
+# User Input Section at the Bottom
 st.markdown("---")
 user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input")
-if user_input and st.session_state.get("enter_pressed", False):
-    st.session_state["chat_history"].append(("You", user_input))
-    if feature == "Wikipedia Search":
-        response = search_wikipedia(user_input)
-    elif feature == "Wolfram Alpha Queries":
-        response = query_wolfram_alpha(user_input)
-    elif feature == "General Chat":
-        response = query_google_gemini(user_input, st.session_state["context"])
-    st.session_state["chat_history"].append(("S.A.N.A", response))
-    st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-    st.session_state["user_input"] = ""
-    st.session_state["enter_pressed"] = False
 
-if st.button("Send"):
+if st.button("Send") or user_input:  # Trigger the button click on "Enter" press
     if user_input:
-        st.session_state["enter_pressed"] = True
+        st.session_state["chat_history"].append(("You", user_input))
+        if feature == "Wikipedia Search":
+            response = search_wikipedia(user_input)
+        elif feature == "Wolfram Alpha Queries":
+            response = query_wolfram_alpha(user_input)
+        elif feature == "General Chat":
+            response = query_google_gemini(user_input, st.session_state["context"])
+        st.session_state["chat_history"].append(("S.A.N.A", response))
+        st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+        st.session_state["user_input"] = ""  # Reset input after sending message
 
-# Add JavaScript for Enter Key
+# JavaScript for triggering Enter key event to submit
 st.markdown(
     """<script>
     const textInput = document.querySelector("input[data-testid='stTextInput']");
     textInput.addEventListener("keydown", function(event) {
         if (event.key === "Enter") {
-            textInput.dispatchEvent(new Event("change", { 'bubbles': true }));
+            document.querySelector("button[role='button']").click();
         }
     });
     </script>""",
     unsafe_allow_html=True
 )
+
 
 # Clear History Button
 st.write("---")
