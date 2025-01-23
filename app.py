@@ -110,10 +110,16 @@ for sender, message in st.session_state["chat_history"]:
 # User Input Section at the Bottom
 # User Input Section at the Bottom
 # User Input Section at the Bottom
+# User Input Section at the Bottom
 st.markdown("---")
 user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input")
 
-if st.button("Send") or (user_input and st.session_state.get("enter_pressed", False)):
+# To handle enter key event, we'll create a flag to manage the input submission
+if 'enter_pressed' not in st.session_state:
+    st.session_state['enter_pressed'] = False
+
+# Check if the user input is valid and "Send" button or enter is pressed
+if st.button("Send") or (user_input and st.session_state['enter_pressed']):
     if user_input:
         st.session_state["chat_history"].append(("You", user_input))
         if feature == "Wikipedia Search":
@@ -134,11 +140,27 @@ st.markdown(
     textInput.addEventListener("keydown", function(event) {
         if (event.key === "Enter") {
             document.querySelector("button[role='button']").click();
+            // Set a flag in session_state to trigger submission on "Enter"
+            window.parent.postMessage({ type: "SET_SESSION_STATE", key: "enter_pressed", value: true }, "*");
         }
     });
     </script>""",
     unsafe_allow_html=True
 )
+
+# JavaScript part for managing session_state to track Enter press
+st.markdown(
+    """<script>
+    window.addEventListener("message", function(event) {
+        if (event.data.type === "SET_SESSION_STATE") {
+            const { key, value } = event.data;
+            window.localStorage.setItem(key, value);
+        }
+    });
+    </script>""",
+    unsafe_allow_html=True
+)
+
 
 # Handling Enter Key Press for state
 if st.session_state.get("enter_pressed", False):
