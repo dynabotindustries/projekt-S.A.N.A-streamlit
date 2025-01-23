@@ -129,8 +129,9 @@ if feature == "File Upload":
         response = ""  # Default empty response
 
 # User Input Section (Text Input Box)
-user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
+user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input")
 
+# Create a button to submit user input
 if st.button("Send") or user_input:  # If "Send" button is pressed or user input is not empty
     if user_input:
         # Add user message to chat history as `You`
