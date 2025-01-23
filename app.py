@@ -110,8 +110,9 @@ for sender, message in st.session_state["chat_history"]:
 # User Input Section at the Bottom
 st.markdown("---")
 user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
-if st.button("Send"):
-    if user_input:
+if user_input:
+    if st.button("Send") or st.session_state.get("enter_pressed", False):
+        st.session_state["enter_pressed"] = False
         st.session_state["chat_history"].append(("You", user_input))
         if feature == "Wikipedia Search":
             response = search_wikipedia(user_input)
@@ -128,3 +129,6 @@ if st.button("Clear Chat History"):
     st.session_state["chat_history"] = []
     st.session_state["context"] = ""
     st.success("Chat history cleared!")
+
+# Add event handling for Enter key
+st.session_state["enter_pressed"] = st.text_input("", on_change=lambda: st.session_state.update({"enter_pressed": True}))
