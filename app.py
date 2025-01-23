@@ -122,30 +122,25 @@ if feature == "File Upload":
         
         st.markdown("### 📄 File Summary:")
         st.write(summary)
-        
-        # Set the response from the file summary
-        response = summary
-    else:
-        response = ""  # Default empty response
 
 # User Input Section (Text Input Box)
-user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input")
+user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
 
-# Ensure the input is captured and sent
-if user_input:
-    # Add user message to chat history as `You`
-    st.session_state["chat_history"].append(("You", user_input))
+if st.button("Send") or user_input:  # If "Send" button is pressed or user input is not empty
+    if user_input:
+        # Add user message to chat history as `You`
+        st.session_state["chat_history"].append(("You", user_input))
 
-    # Process based on selected feature
-    if feature == "Wikipedia Search":
-        response = search_wikipedia(user_input)
-    elif feature == "Wolfram Alpha Queries":
-        response = query_wolfram_alpha(user_input)
-    elif feature == "General Chat":
-        response = query_google_gemini(user_input, st.session_state["context"])
+        # Process based on selected feature
+        if feature == "Wikipedia Search":
+            response = search_wikipedia(user_input)
+        elif feature == "Wolfram Alpha Queries":
+            response = query_wolfram_alpha(user_input)
+        elif feature == "General Chat":
+            response = query_google_gemini(user_input, st.session_state["context"])
 
-    # Add response to chat history as `S.A.N.A.`
-    st.session_state["chat_history"].append(("S.A.N.A", response))
+        # Add response to chat history as `S.A.N.A.`
+        st.session_state["chat_history"].append(("S.A.N.A", response))
 
-    # Update context for chat-based features
-    st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+        # Update context for chat-based features
+        st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
