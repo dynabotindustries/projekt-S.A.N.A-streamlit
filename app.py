@@ -74,103 +74,47 @@ Feel free to ask me anything! 😊
 """)
 st.markdown("---")
 
+# Initialize session variables
 if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = []
+    st.session_state["chat_history"] = []   # Initialize chat history
 if "context" not in st.session_state:
-    st.session_state["context"] = ""
+    st.session_state["context"] = ""   # Initialize context
 
 # Feature Selection Dropdown
 feature = st.selectbox("Select a feature to use:", 
-    ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "File Upload (Summarization)"], index=0)
+    ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"], index=0)
 
-# Feature-Specific Sections
-if feature == "File Upload (Summarization)":
-    uploaded_file = st.file_uploader("Upload a text or PDF file for summarization:", type=["txt", "pdf"])
-    if uploaded_file:
-        if uploaded_file.type == "application/pdf":
-            reader = PdfReader(uploaded_file)
-            text = " ".join(page.extract_text() for page in reader.pages)
-        elif uploaded_file.type == "text/plain":
-            text = uploaded_file.read().decode("utf-8")
+# User Input Section
+user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
 
-        if len(text) > 3000:
-            text = text[:3000]  # Truncate text to 3000 characters for processing
-
-        response = query_google_gemini(f"Summarize this: {text}", st.session_state["context"])
-        st.markdown(f"### Summary:\n{response}")
-
-# Chat History Section
-st.markdown("### 💬 Chat History")
-for sender, message in st.session_state["chat_history"]:
-    if sender == "You":
-        st.markdown(f"**🧑‍💻 You:** {message}")
-    elif sender == "S.A.N.A":
-        st.markdown(f"<img src='{logo}' width=20 style='display:inline-block; margin-right:10px'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
-
-# User Input Section at the Bottom
-# User Input Section at the Bottom
-# User Input Section at the Bottom
-# User Input Section at the Bottom
-st.markdown("---")
-user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input")
-
-# To handle enter key event, we'll create a flag to manage the input submission
-if 'enter_pressed' not in st.session_state:
-    st.session_state['enter_pressed'] = False
-
-# Check if the user input is valid and "Send" button or enter is pressed
-if st.button("Send") or (user_input and st.session_state['enter_pressed']):
+if st.button("Send") or user_input:  # If "Send" button is pressed or user input is not empty
     if user_input:
+        # Add user message to chat history as `You`
         st.session_state["chat_history"].append(("You", user_input))
+
+        # Process based on selected feature
         if feature == "Wikipedia Search":
             response = search_wikipedia(user_input)
         elif feature == "Wolfram Alpha Queries":
             response = query_wolfram_alpha(user_input)
         elif feature == "General Chat":
             response = query_google_gemini(user_input, st.session_state["context"])
+
+        # Add response to chat history as `S.A.N.A.`
         st.session_state["chat_history"].append(("S.A.N.A", response))
+
+        # Update context for chat-based features
         st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-        st.session_state["user_input"] = ""  # Reset input after sending message
-        st.session_state["enter_pressed"] = False  # Reset enter pressed state
 
-# JavaScript for triggering Enter key event to submit
-st.markdown(
-    """<script>
-    const textInput = document.querySelector("input[data-testid='stTextInput']");
-    textInput.addEventListener("keydown", function(event) {
-        if (event.key === "Enter") {
-            document.querySelector("button[role='button']").click();
-            // Set a flag in session_state to trigger submission on "Enter"
-            window.parent.postMessage({ type: "SET_SESSION_STATE", key: "enter_pressed", value: true }, "*");
-        }
-    });
-    </script>""",
-    unsafe_allow_html=True
-)
-
-# JavaScript part for managing session_state to track Enter press
-st.markdown(
-    """<script>
-    window.addEventListener("message", function(event) {
-        if (event.data.type === "SET_SESSION_STATE") {
-            const { key, value } = event.data;
-            window.localStorage.setItem(key, value);
-        }
-    });
-    </script>""",
-    unsafe_allow_html=True
-)
-
-
-# Handling Enter Key Press for state
-if st.session_state.get("enter_pressed", False):
-    st.session_state["enter_pressed"] = False
-
-
-
-# Clear History Button
+# Display Chat History
+st.markdown("### 💬 Chat History")
 st.write("---")
-if st.button("Clear Chat History"):
-    st.session_state["chat_history"] = []
-    st.session_state["context"] = ""
-    st.success("Chat history cleared!")
+for sender, message in st.session_state["chat_history"]:   # Parse session chat history tuple as (sender, message)
+    if sender == "You":
+        # Render user prompt
+        st.markdown(f"**🧑‍💻 You:** {message}")
+    elif sender == "S.A.N.A":
+        # Render logo and the response inline
+        st.markdown(f"<img src='{logo}' width=20 style='display:inline-block; margin-right:10px'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
+    else:
+        st.markdown(f"**❗Unknown Sender:** {message}")
