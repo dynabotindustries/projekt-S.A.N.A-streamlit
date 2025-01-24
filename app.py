@@ -4,7 +4,7 @@ import wolframalpha
 import google.generativeai as genai
 
 # Google Gemini API key
-GENAI_API_KEY = st.secrets["GENAI_API_KEY"] # Replace with your actual API key
+GENAI_API_KEY = st.secrets["GENAI_API_KEY"]  # Replace with your actual API key
 genai.configure(api_key=GENAI_API_KEY)
 system_prompt = '''You are S.A.N.A (Secure Autonomous Non-Intrusive Assistant), a smart, privacy-respecting AI'''
 model = genai.GenerativeModel(
@@ -85,4 +85,51 @@ st.markdown("---")
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []  # Initialize chat history
 if "context" not in st.session_state:
-    st.session_state["context
+    st.session_state["context"] = ""  # Initialize context
+
+# Feature Selection Dropdown
+feature = st.selectbox("Select a feature to use:", 
+                       ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"], index=0)
+
+# Display Chat History
+st.markdown("### 💬 Chat History")
+st.write("---")
+for sender, message in st.session_state["chat_history"]:  # Parse session chat history tuple as (sender, message)
+    if sender == "You":
+        # Render user prompt
+        st.markdown(f"**🧑‍💻 You:** {message}")
+    elif sender == "S.A.N.A":
+        # Render logo and the response inline
+        st.markdown(f"<img src='{logo}' width=20 style='display:inline-block; margin-right:10px'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
+    else:
+        st.markdown(f"**❗Unknown Sender:** {message}")
+
+# User Input Section
+st.write("---")
+user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
+
+if st.button("Send"):
+    if user_input:
+        # Add user message to chat history as `You`
+        st.session_state["chat_history"].append(("You", user_input))
+
+        # Process based on selected feature
+        if feature == "Wikipedia Search":
+            response = search_wikipedia(user_input)
+        elif feature == "Wolfram Alpha Queries":
+            response = query_wolfram_alpha(user_input)
+        elif feature == "General Chat":
+            response = query_google_gemini(user_input, st.session_state["context"])
+
+        # Add response to chat history as `S.A.N.A.`
+        st.session_state["chat_history"].append(("S.A.N.A", response))
+
+        # Update context for chat-based features
+        st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+
+# Clear History Button
+st.write("---")
+if st.button("Clear Chat History"):
+    st.session_state["chat_history"] = []
+    st.session_state["context"] = ""
+    st.success("Chat history cleared!")
