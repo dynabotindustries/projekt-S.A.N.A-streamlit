@@ -127,6 +127,9 @@ if st.button("Send"):
         # Update context for chat-based features
         st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
 
+        # Clear the input field after sending
+        st.session_state.user_input = "" 
+
 # Clear History Button
 st.write("---")
 if st.button("Clear Chat History"):
