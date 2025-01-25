@@ -121,7 +121,8 @@ for sender, message in st.session_state["chat_history"]:
 
 # User Input
 st.write("---")
-user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
+user_input_key = "user_input"
+user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key=user_input_key)
 
 if st.button("Send"):
     if user_input:
@@ -145,7 +146,7 @@ if st.button("Send"):
             st.error(f"An unexpected error occurred: {e}")
             st.session_state["chat_history"].append(("S.A.N.A", "An unexpected error occurred. Please check the logs."))
 
-        st.session_state.user_input = ""
+        st.session_state[user_input_key] = ""
 
 # Clear History Button
 st.write("---")
