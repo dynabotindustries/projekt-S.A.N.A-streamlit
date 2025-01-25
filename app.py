@@ -3,6 +3,8 @@ import wikipedia
 import wolframalpha
 import google.generativeai as genai
 import logging
+from PyPDF2 import PdfReader
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -61,7 +63,7 @@ def query_wolfram_alpha(query):
         logging.error(f"Wolfram Alpha error: {e}")
         return "An error occurred while querying Wolfram Alpha."
 
-def query_google_gemini(query, context):
+def query_google_gemini(query, context=""):
     if model is None:
         return "Gemini is not configured."
     try:
@@ -75,6 +77,21 @@ def query_google_gemini(query, context):
         logging.error(f"Gemini error: {e}")
         return f"An error occurred while fetching from Google Gemini: {e}"
 
+def extract_text_from_file(file):
+    try:
+        if file.type == "application/pdf":
+            pdf_reader = PdfReader(file)
+            text = "".join(page.extract_text() for page in pdf_reader.pages)
+            return text
+        elif file.type == "text/plain":
+            text = file.read().decode("utf-8")
+            return text
+        else:
+            return None
+    except Exception as e:
+        logging.error(f"File processing error: {e}")
+        return None
+
 # Streamlit App
 st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
 
@@ -84,7 +101,7 @@ with st.sidebar:
     st.markdown("⚙️ **Customize your assistant experience (coming soon!)**")
     st.markdown("---")
     st.markdown("Use the features below to interact with S.A.N.A:")
-    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat")
+    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat\n4. PDF/TXT Summary")
 
 # Main App
 
@@ -106,7 +123,7 @@ if "context" not in st.session_state:
 
 # Feature Selection
 feature = st.selectbox("Select a feature to use:",
-                    ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"], index=0)
+                       ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary"], index=0)
 
 # Display Chat History
 st.markdown("### 💬 Chat History")
@@ -119,37 +136,46 @@ for sender, message in st.session_state["chat_history"]:
     else:
         st.markdown(f"**❗Unknown Sender:** {message}")
 
-# User Input
+# User Input or File Upload
 st.write("---")
 
-if "user_input" not in st.session_state: # Initialize user_input in session state
-    st.session_state.user_input = ""
-
-user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input", value=st.session_state.user_input)
-
-if st.button("Send"):
-    if user_input:
-        st.session_state["chat_history"].append(("You", user_input))
-
-        try:
-            if feature == "Wikipedia Search":
-                response = search_wikipedia(user_input)
-            elif feature == "Wolfram Alpha Queries":
-                response = query_wolfram_alpha(user_input)
-            elif feature == "General Chat":
-                response = query_google_gemini(user_input, st.session_state["context"])
-            else:
-                response = "Invalid feature selected."
-
-            st.session_state["chat_history"].append(("S.A.N.A", response))
-            st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-
-        except Exception as e:
-            logging.error(f"Main processing error: {e}")
-            st.error(f"An unexpected error occurred: {e}")
-            st.session_state["chat_history"].append(("S.A.N.A", "An unexpected error occurred. Please check the logs."))
-
-        st.experimental_rerun() # Force a rerun to update the input field
+if feature == "PDF/TXT Summary":
+    uploaded_file = st.file_uploader("📂 Upload a PDF or TXT file:", type=["pdf", "txt"])
+    if uploaded_file is not None:
+        file_text = extract_text_from_file(uploaded_file)
+        if file_text:
+            st.write("### Extracted Text:")
+            st.text_area("Preview of the file content:", value=file_text, height=200)
+            if st.button("Summarize File"):
+                summary = query_google_gemini(file_text, st.session_state["context"])
+                st.markdown("### Summary:")
+                st.write(summary)
+                st.session_state["chat_history"].append(("You", "Uploaded a file for summary"))
+                st.session_state["chat_history"].append(("S.A.N.A", summary))
+                st.experimental_rerun()
+        else:
+            st.error("Unsupported file type or failed to extract text.")
+else:
+    user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input")
+    if st.button("Send"):
+        if user_input:
+            st.session_state["chat_history"].append(("You", user_input))
+            try:
+                if feature == "Wikipedia Search":
+                    response = search_wikipedia(user_input)
+                elif feature == "Wolfram Alpha Queries":
+                    response = query_wolfram_alpha(user_input)
+                elif feature == "General Chat":
+                    response = query_google_gemini(user_input, st.session_state["context"])
+                else:
+                    response = "Invalid feature selected."
+                st.session_state["chat_history"].append(("S.A.N.A", response))
+                st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+            except Exception as e:
+                logging.error(f"Main processing error: {e}")
+                st.error(f"An unexpected error occurred: {e}")
+                st.session_state["chat_history"].append(("S.A.N.A", "An unexpected error occurred. Please check the logs."))
+            st.experimental_rerun()
 
 # Clear History Button
 st.write("---")
