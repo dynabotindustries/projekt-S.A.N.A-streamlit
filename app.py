@@ -149,8 +149,6 @@ if st.button("Send"):
             st.error(f"An unexpected error occurred: {e}")
             st.session_state["chat_history"].append(("S.A.N.A", "An unexpected error occurred. Please check the logs."))
 
-        st.session_state.user_input = "" # This is now correct
-
         st.experimental_rerun() # Force a rerun to update the input field
 
 # Clear History Button
