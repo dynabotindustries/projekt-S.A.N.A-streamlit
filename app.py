@@ -94,12 +94,15 @@ def describe_image(image):
         buffer = io.BytesIO()
         image.save(buffer, format="PNG")
         img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        context = "Describe the content of the following image:"
-        response = model.generate_content(context, attachments={"image": img_base64})
+        
+        # Send the base64 string as part of a textual query to Gemini
+        context = f"Describe the content of this image represented in base64: {img_base64[:500]}... (truncated for length)"
+        response = model.generate_content(context)
         return response.text
     except Exception as e:
         logging.error(f"Image description error: {e}")
         return "An error occurred while describing the image."
+
 
 # Streamlit App
 st.set_page_config(page_title="Projekt S.A.N.A", page_icon="🤖", layout="wide")
