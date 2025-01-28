@@ -4,6 +4,7 @@ import wolframalpha
 import google.generativeai as genai
 import logging
 from PyPDF2 import PdfReader
+from PIL import Image
 import os
 
 # Configure logging
@@ -39,7 +40,7 @@ except Exception as e:
 # APP logo
 logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
 
-## Functions for the assistant
+# Functions for the assistant
 
 def search_wikipedia(query):
     try:
@@ -92,6 +93,17 @@ def extract_text_from_file(file):
         logging.error(f"File processing error: {e}")
         return None
 
+def describe_image(image):
+    try:
+        # Convert image to bytes for Gemini API
+        img_bytes = image.tobytes()
+        context = "Describe the image based on its content."
+        response = model.generate_content(context, attachments={"image": img_bytes})
+        return response.text
+    except Exception as e:
+        logging.error(f"Image description error: {e}")
+        return "An error occurred while describing the image."
+
 # Streamlit App
 st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
 
@@ -101,7 +113,7 @@ with st.sidebar:
     st.markdown("⚙️ **Customize your assistant experience (coming soon!)**")
     st.markdown("---")
     st.markdown("Use the features below to interact with S.A.N.A:")
-    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat\n4. PDF/TXT Summary")
+    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat\n4. PDF/TXT Summary\n5. Image Description")
 
 # Main App
 
@@ -123,7 +135,7 @@ if "context" not in st.session_state:
 
 # Feature Selection
 feature = st.selectbox("Select a feature to use:",
-                       ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary"], index=0)
+                       ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description"], index=0)
 
 # Display Chat History
 st.markdown("### 💬 Chat History")
@@ -155,6 +167,18 @@ if feature == "PDF/TXT Summary":
                 st.experimental_rerun()
         else:
             st.error("Unsupported file type or failed to extract text.")
+elif feature == "Image Description":
+    uploaded_image = st.file_uploader("📷 Upload an image file:", type=["png", "jpg", "jpeg"])
+    if uploaded_image is not None:
+        image = Image.open(uploaded_image)
+        st.image(image, caption="Uploaded Image", use_column_width=True)
+        if st.button("Describe Image"):
+            description = describe_image(image)
+            st.markdown("### Description:")
+            st.write(description)
+            st.session_state["chat_history"].append(("You", "Uploaded an image for description"))
+            st.session_state["chat_history"].append(("S.A.N.A", description))
+            st.experimental_rerun()
 else:
     user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input")
     if st.button("Send"):
