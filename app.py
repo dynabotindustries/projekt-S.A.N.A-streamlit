@@ -12,7 +12,7 @@ import google.generativeai as genai
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Hugging Face API configuration
-HF_API_URL = "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning"
+HF_API_URL = "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base"
 HF_API_KEY = st.secrets["HF_API_KEY"]
 
 headers = {"Authorization": f"Bearer {HF_API_KEY}"}
