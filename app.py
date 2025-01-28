@@ -5,7 +5,8 @@ import google.generativeai as genai
 import logging
 from PyPDF2 import PdfReader
 from PIL import Image
-import os
+import io
+import base64
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -36,9 +37,6 @@ except KeyError:
 except Exception as e:
     st.error(f"Error initializing Wolfram Alpha client: {e}")
     wolfram_client = None
-
-# APP logo
-logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
 
 # Functions for the assistant
 
@@ -71,9 +69,6 @@ def query_google_gemini(query, context=""):
         conversation_input = context + f"\nUser: {query}\nAssistant:"
         response = model.generate_content(conversation_input)
         return response.text
-    except genai.types.generation.GenerationError as e:
-        logging.error(f"Gemini Generation Error: {e}")
-        return f"Gemini encountered an error during generation: {e.message}"
     except Exception as e:
         logging.error(f"Gemini error: {e}")
         return f"An error occurred while fetching from Google Gemini: {e}"
@@ -95,17 +90,19 @@ def extract_text_from_file(file):
 
 def describe_image(image):
     try:
-        # Convert image to bytes for Gemini API
-        img_bytes = image.tobytes()
-        context = "Describe the image based on its content."
-        response = model.generate_content(context, attachments={"image": img_bytes})
+        # Convert image to base64
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        context = "Describe the content of the following image:"
+        response = model.generate_content(context, attachments={"image": img_base64})
         return response.text
     except Exception as e:
         logging.error(f"Image description error: {e}")
         return "An error occurred while describing the image."
 
 # Streamlit App
-st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
+st.set_page_config(page_title="Projekt S.A.N.A", page_icon="🤖", layout="wide")
 
 # Sidebar
 with st.sidebar:
@@ -118,9 +115,7 @@ with st.sidebar:
 # Main App
 
 # Logo and Title
-st.markdown(f"<h1><img src='{logo}' width=70 style='display:inline-block; margin-right:15px'></img><b>Projekt S.A.N.A:</b></h1>", unsafe_allow_html=True)
-
-# Description
+st.title("Projekt S.A.N.A")
 st.markdown("""
 **S.A.N.A** is a secure, autonomous, and non-intrusive virtual assistant. 
 Feel free to ask me anything! 😊
@@ -144,9 +139,7 @@ for sender, message in st.session_state["chat_history"]:
     if sender == "You":
         st.markdown(f"**🧑‍💻 You:** {message}")
     elif sender == "S.A.N.A":
-        st.markdown(f"<img src='{logo}' width=20 style='display:inline-block; margin-right:10px'></img><b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
-    else:
-        st.markdown(f"**❗Unknown Sender:** {message}")
+        st.markdown(f"**🤖 S.A.N.A:** {message}")
 
 # User Input or File Upload
 st.write("---")
@@ -156,7 +149,6 @@ if feature == "PDF/TXT Summary":
     if uploaded_file is not None:
         file_text = extract_text_from_file(uploaded_file)
         if file_text:
-            st.write("### Extracted Text:")
             st.text_area("Preview of the file content:", value=file_text, height=200)
             if st.button("Summarize File"):
                 summary = query_google_gemini(file_text, st.session_state["context"])
@@ -180,30 +172,22 @@ elif feature == "Image Description":
             st.session_state["chat_history"].append(("S.A.N.A", description))
             st.experimental_rerun()
 else:
-    user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...", key="user_input")
+    user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
     if st.button("Send"):
         if user_input:
             st.session_state["chat_history"].append(("You", user_input))
-            try:
-                if feature == "Wikipedia Search":
-                    response = search_wikipedia(user_input)
-                elif feature == "Wolfram Alpha Queries":
-                    response = query_wolfram_alpha(user_input)
-                elif feature == "General Chat":
-                    response = query_google_gemini(user_input, st.session_state["context"])
-                else:
-                    response = "Invalid feature selected."
-                st.session_state["chat_history"].append(("S.A.N.A", response))
-                st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-            except Exception as e:
-                logging.error(f"Main processing error: {e}")
-                st.error(f"An unexpected error occurred: {e}")
-                st.session_state["chat_history"].append(("S.A.N.A", "An unexpected error occurred. Please check the logs."))
+            if feature == "Wikipedia Search":
+                response = search_wikipedia(user_input)
+            elif feature == "Wolfram Alpha Queries":
+                response = query_wolfram_alpha(user_input)
+            elif feature == "General Chat":
+                response = query_google_gemini(user_input, st.session_state["context"])
+            else:
+                response = "Invalid feature selected."
+            st.session_state["chat_history"].append(("S.A.N.A", response))
             st.experimental_rerun()
 
 # Clear History Button
-st.write("---")
 if st.button("Clear Chat History"):
     st.session_state["chat_history"] = []
-    st.session_state["context"] = ""
     st.success("Chat history cleared!")
