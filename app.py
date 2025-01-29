@@ -3,9 +3,9 @@ import wikipedia
 import wolframalpha
 import google.generativeai as genai
 import requests
-import logging
 from PIL import Image
 import io
+import logging
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -93,19 +93,13 @@ def describe_image(image):
         logging.error(f"Image description error: {e}")
         return "Failed to describe the image."
 
-def take_picture():
-    st.write("Press the 'Capture' button below to take a picture:")
-    picture = st.camera_input("Take a Picture")
-    if picture:
-        image = Image.open(picture)
-        return image
-    return None
-
-# Streamlit App
-st.set_page_config(page_title="Projekt S.A.N.A", layout="wide")
+# App Configuration
+logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
+st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
 
 # Sidebar
 with st.sidebar:
+    st.image(logo, width=120)
     st.title("S.A.N.A Settings")
     st.markdown("⚙️ **Customize your assistant experience (coming soon!)**")
     st.markdown("---")
@@ -119,7 +113,8 @@ if "context" not in st.session_state:
     st.session_state["context"] = ""
 
 # Main Layout
-st.title("Projekt S.A.N.A")
+st.title("🤖 Projekt S.A.N.A")
+st.image(logo, width=150)
 st.markdown("""
 Welcome to **S.A.N.A**: A secure, autonomous, and non-intrusive assistant. Select a feature below to interact.
 """)
@@ -176,21 +171,21 @@ if feature == "Image Description":
     st.markdown("### 🖼️ Image Description")
     st.markdown("Upload an image or take a picture to generate a description of it.")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
-    with col2:
-        st.write("Or")
-        captured_image = take_picture()
-
-    image = None
+    uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
     if uploaded_file:
         image = Image.open(uploaded_file)
-    elif captured_image:
-        image = captured_image
+        st.image(image, caption="Uploaded Image", use_column_width=True)
+        with st.spinner("Generating description..."):
+            description = describe_image(image)
+            st.success("Description Generated!")
+            st.write(description)
 
-    if image:
-        st.image(image, caption="Selected Image", use_column_width=True)
+    st.markdown("---")
+    st.write("Or, take a picture using your camera:")
+    picture = st.camera_input("Take a Picture")
+    if picture:
+        image = Image.open(picture)
+        st.image(image, caption="Captured Image", use_column_width=True)
         with st.spinner("Generating description..."):
             description = describe_image(image)
             st.success("Description Generated!")
@@ -198,3 +193,4 @@ if feature == "Image Description":
 
 # Footer
 st.write("---")
+st.markdown("Powered by Hugging Face, Wolfram Alpha, Wikipedia, and Google Gemini.")
