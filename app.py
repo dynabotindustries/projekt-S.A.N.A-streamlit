@@ -113,8 +113,8 @@ if "context" not in st.session_state:
     st.session_state["context"] = ""
 
 # Main Layout
-st.title("🤖 Projekt S.A.N.A")
-st.image(logo, width=150)
+st.image(logo, width=125)
+st.title("Projekt S.A.N.A")
 st.markdown("""
 Welcome to **S.A.N.A**: A secure, autonomous, and non-intrusive assistant. Select a feature below to interact.
 """)
