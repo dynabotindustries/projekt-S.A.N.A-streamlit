@@ -127,11 +127,19 @@ def generate_image(prompt):
             headers=headers,
             json=data
         )
-        image = Image.open(io.BytesIO(response.content))
-        return image
+
+        # Check if the response is an image
+        if "image" in response.headers.get("Content-Type", ""):
+            image = Image.open(io.BytesIO(response.content))
+            return image
+        else:
+            error_message = response.json()
+            logging.error(f"Image generation error: {error_message}")
+            return None
     except Exception as e:
         logging.error(f"Image generation error: {e}")
         return None
+
 
 
 
