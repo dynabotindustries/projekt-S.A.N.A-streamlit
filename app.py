@@ -7,6 +7,7 @@ import base64
 import requests
 from PIL import Image
 import io
+from PyPDF2 import PdfReader
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -74,7 +75,22 @@ def query_google_gemini(query, context):
         logging.error(f"Gemini error: {e}")
         return "Error fetching from Gemini."
 
-# Function: PDF/TXT Summarization using Hugging Face
+# Function: Extract text from PDF/TXT
+def extract_text_from_file(file):
+    try:
+        if file.type == "application/pdf":
+            pdf_reader = PdfReader(file)
+            text = "".join(filter(None, (page.extract_text() for page in pdf_reader.pages)))
+            return text
+        elif file.type == "text/plain":
+            return file.read().decode("utf-8")
+        else:
+            return None
+    except Exception as e:
+        logging.error(f"File processing error: {e}")
+        return None
+
+# Function: Summarize text using Hugging Face
 def summarize_text(text):
     headers = {"Authorization": f"Bearer {HF_API_KEY}"}
     data = {"inputs": text, "parameters": {"max_length": 150, "min_length": 50, "do_sample": False}}
@@ -84,21 +100,6 @@ def summarize_text(text):
     except Exception as e:
         logging.error(f"PDF/TXT Summary error: {e}")
         return "Error summarizing the text."
-
-def process_uploaded_file(uploaded_file):
-    try:
-        if uploaded_file.type == "text/plain":
-            text = uploaded_file.read().decode("utf-8")
-        elif uploaded_file.type == "application/pdf":
-            import PyPDF2
-            reader = PyPDF2.PdfReader(uploaded_file)
-            text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-        else:
-            return "Unsupported file type."
-        return summarize_text(text)
-    except Exception as e:
-        logging.error(f"File processing error: {e}")
-        return "Error processing the file."
 
 # Function: Image Description using Hugging Face
 def describe_image(image):
@@ -179,9 +180,12 @@ if st.button("Send"):
 if feature == "PDF/TXT Summary":
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
     if uploaded_file:
-        st.success("File uploaded successfully!")
-        summary = process_uploaded_file(uploaded_file)
-        st.markdown(f"**📜 Summary:** {summary}")
+        text = extract_text_from_file(uploaded_file)
+        if text:
+            summary = summarize_text(text)
+            st.markdown(f"**📜 Summary:** {summary}")
+        else:
+            st.error("Failed to extract text from the file.")
 
 # Image Description
 if feature == "Image Description":
@@ -193,8 +197,9 @@ if feature == "Image Description":
         st.markdown(f"**🖼️ Description:** {description}")
 
     # Take Picture Button
-    if st.camera_input("Take a picture"):
-        captured_image = Image.open(st.camera_input("Take a picture"))
-        st.image(captured_image, caption="Captured Image", use_column_width=True)
-        description = describe_image(captured_image)
+    captured_image = st.camera_input("Take a picture")
+    if captured_image:
+        image = Image.open(captured_image)
+        st.image(image, caption="Captured Image", use_column_width=True)
+        description = describe_image(image)
         st.markdown(f"**🖼️ Description:** {description}")
