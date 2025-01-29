@@ -123,12 +123,12 @@ def generate_image(prompt):
 
     try:
         response = requests.post(
-            "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1",
+            "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
             headers=headers,
             json=data
         )
 
-        # Check if the response is an image
+        # Check if the response contains an image
         if "image" in response.headers.get("Content-Type", ""):
             image = Image.open(io.BytesIO(response.content))
             return image
@@ -139,8 +139,6 @@ def generate_image(prompt):
     except Exception as e:
         logging.error(f"Image generation error: {e}")
         return None
-
-
 
 
 # Streamlit App
@@ -222,10 +220,13 @@ if feature == "Image Description":
 
 # Image Generation
 if feature == "Image Generation":
-    prompt = st.text_input("Enter a prompt for image generation:")
+    prompt = st.text_input("🎨 Enter a prompt for the AI-generated image:")
     if st.button("Generate Image"):
-        generated_image = generate_image(prompt)
-        if generated_image:
-            st.image(generated_image, caption="Generated Image", use_column_width=True)
-        else:
-            st.error("Error generating the image.")
+        if prompt:
+            with st.spinner("Generating image..."):
+                generated_img = generate_image(prompt)
+                if generated_img:
+                    st.image(generated_img, caption="🖼️ AI-Generated Image", use_column_width=True)
+                else:
+                    st.error("Failed to generate image. Try a different prompt.")
+
