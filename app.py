@@ -81,13 +81,20 @@ def process_uploaded_file(uploaded_file):
         elif uploaded_file.type == "application/pdf":
             import PyPDF2
             reader = PyPDF2.PdfReader(uploaded_file)
-            text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+            text = "\n".join([page.extract_text() or "" for page in reader.pages])
+            if not text.strip():
+                raise ValueError("Extracted text is empty.")
         else:
             return "Unsupported file type."
-        return summarize_text(text)
+
+        summary = summarize_text(text)
+        if not summary.strip():
+            raise ValueError("Summarization returned an empty response.")
+        return summary
     except Exception as e:
-        logging.error(f"File processing error: {e}")
-        return "Error processing the file."
+        logging.error(f"PDF/TXT Summary error: {e}")
+        return f"Error processing file: {e}"
+
 
 # Function: Image Description using Hugging Face
 def describe_image(image):
