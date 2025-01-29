@@ -218,6 +218,14 @@ if feature == "Image Description":
         description = describe_image(image)
         st.markdown(f"**🖼️ Description:** {description}")
 
+    # Take Picture Button
+    captured_image = st.camera_input("Take a picture")
+    if captured_image:
+        image = Image.open(captured_image)
+        st.image(image, caption="Captured Image", use_column_width=True)
+        description = describe_image(image)
+        st.markdown(f"**🖼️ Description:** {description}")
+
 # Image Generation
 if feature == "Image Generation":
     prompt = st.text_input("🎨 Enter a prompt for the AI-generated image:")
