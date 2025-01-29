@@ -7,7 +7,6 @@ import base64
 import requests
 from PIL import Image
 import io
-from PyPDF2 import PdfReader
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -36,11 +35,6 @@ except KeyError:
     st.error("Error: APP_ID not found in Streamlit secrets.")
     wolfram_client = None
 
-# Hugging Face API for Image Description & PDF Summary
-HF_API_KEY = st.secrets["HF_API_KEY"]
-HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
-HF_SUMMARY_MODEL = "facebook/bart-large-cnn"
-
 # Function: Wikipedia Search
 def search_wikipedia(query):
     try:
@@ -65,7 +59,7 @@ def query_wolfram_alpha(query):
         return "Error querying Wolfram Alpha."
 
 # Function: Gemini Chat
-def query_google_gemini(query, context):
+def query_google_gemini(query, context=""):
     if model is None:
         return "Gemini is not configured."
     try:
@@ -75,42 +69,36 @@ def query_google_gemini(query, context):
         logging.error(f"Gemini error: {e}")
         return "Error fetching from Gemini."
 
-# Function: Extract text from PDF/TXT
-def extract_text_from_file(file):
+# Function: Summarization using Gemini
+def summarize_text(text):
+    summary_prompt = f"Summarize the following text in 3-4 sentences:\n\n{text}"
+    return query_google_gemini(summary_prompt)
+
+def process_uploaded_file(uploaded_file):
     try:
-        if file.type == "application/pdf":
-            pdf_reader = PdfReader(file)
-            text = "".join(filter(None, (page.extract_text() for page in pdf_reader.pages)))
-            return text
-        elif file.type == "text/plain":
-            return file.read().decode("utf-8")
+        if uploaded_file.type == "text/plain":
+            text = uploaded_file.read().decode("utf-8")
+        elif uploaded_file.type == "application/pdf":
+            import PyPDF2
+            reader = PyPDF2.PdfReader(uploaded_file)
+            text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
         else:
-            return None
+            return "Unsupported file type."
+        return summarize_text(text)
     except Exception as e:
         logging.error(f"File processing error: {e}")
-        return None
-
-# Function: Summarize text using Hugging Face
-def summarize_text(text):
-    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
-    data = {"inputs": text, "parameters": {"max_length": 150, "min_length": 50, "do_sample": False}}
-    try:
-        response = requests.post(f"https://api-inference.huggingface.co/models/{HF_SUMMARY_MODEL}", headers=headers, json=data)
-        return response.json()[0]['summary_text']
-    except Exception as e:
-        logging.error(f"PDF/TXT Summary error: {e}")
-        return "Error summarizing the text."
+        return "Error processing the file."
 
 # Function: Image Description using Hugging Face
 def describe_image(image):
-    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+    headers = {"Authorization": f"Bearer {st.secrets['HF_API_KEY']}"}
     buffered = io.BytesIO()
     image.save(buffered, format="JPEG")
     encoded_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
     payload = {"inputs": encoded_image}
     
     try:
-        response = requests.post(f"https://api-inference.huggingface.co/models/{HF_IMAGE_MODEL}", headers=headers, json=payload)
+        response = requests.post("https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large", headers=headers, json=payload)
         return response.json()[0]['generated_text']
     except Exception as e:
         logging.error(f"Image description error: {e}")
@@ -180,12 +168,9 @@ if st.button("Send"):
 if feature == "PDF/TXT Summary":
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
     if uploaded_file:
-        text = extract_text_from_file(uploaded_file)
-        if text:
-            summary = summarize_text(text)
-            st.markdown(f"**📜 Summary:** {summary}")
-        else:
-            st.error("Failed to extract text from the file.")
+        st.success("File uploaded successfully!")
+        summary = process_uploaded_file(uploaded_file)
+        st.markdown(f"**📜 Summary:** {summary}")
 
 # Image Description
 if feature == "Image Description":
@@ -197,9 +182,8 @@ if feature == "Image Description":
         st.markdown(f"**🖼️ Description:** {description}")
 
     # Take Picture Button
-    captured_image = st.camera_input("Take a picture")
-    if captured_image:
-        image = Image.open(captured_image)
-        st.image(image, caption="Captured Image", use_column_width=True)
-        description = describe_image(image)
+    if st.camera_input("Take a picture"):
+        captured_image = Image.open(st.camera_input("Take a picture"))
+        st.image(captured_image, caption="Captured Image", use_column_width=True)
+        description = describe_image(captured_image)
         st.markdown(f"**🖼️ Description:** {description}")
