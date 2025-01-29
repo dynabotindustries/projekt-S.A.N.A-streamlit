@@ -122,17 +122,17 @@ def generate_image(prompt):
     data = {"inputs": prompt}
 
     try:
-        response = requests.post(f"https://api-inference.huggingface.co/models/{HF_GEN_MODEL}", headers=headers, json=data)
-        
-        if response.status_code == 200:
-            image_bytes = response.content
-            return Image.open(io.BytesIO(image_bytes))
-        else:
-            logging.error(f"Image generation error: {response.json()}")
-            return None
+        response = requests.post(
+            "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1",
+            headers=headers,
+            json=data
+        )
+        image = Image.open(io.BytesIO(response.content))
+        return image
     except Exception as e:
         logging.error(f"Image generation error: {e}")
         return None
+
 
 
 # Streamlit App
