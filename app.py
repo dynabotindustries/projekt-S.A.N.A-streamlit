@@ -120,13 +120,20 @@ def describe_image(image):
 def generate_image(prompt):
     headers = {"Authorization": f"Bearer {HF_API_KEY}"}
     data = {"inputs": prompt}
+
     try:
         response = requests.post(f"https://api-inference.huggingface.co/models/{HF_GEN_MODEL}", headers=headers, json=data)
-        image_bytes = base64.b64decode(response.json()["generated_image"])
-        return Image.open(io.BytesIO(image_bytes))
+        
+        if response.status_code == 200:
+            image_bytes = response.content
+            return Image.open(io.BytesIO(image_bytes))
+        else:
+            logging.error(f"Image generation error: {response.json()}")
+            return None
     except Exception as e:
         logging.error(f"Image generation error: {e}")
         return None
+
 
 # Streamlit App
 st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
