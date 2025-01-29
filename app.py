@@ -59,7 +59,7 @@ def query_wolfram_alpha(query):
         return "Error querying Wolfram Alpha."
 
 # Function: Gemini Chat
-def query_google_gemini(query, context=""):
+def query_google_gemini(query, context):
     if model is None:
         return "Gemini is not configured."
     try:
@@ -69,11 +69,18 @@ def query_google_gemini(query, context=""):
         logging.error(f"Gemini error: {e}")
         return "Error fetching from Gemini."
 
-# Function: Summarization using Gemini
-def summarize_text(text):
-    summary_prompt = f"Summarize the following text in 3-4 sentences:\n\n{text}"
-    return query_google_gemini(summary_prompt)
+# Function: PDF/TXT Summarization using Gemini
+def summarize_text_with_gemini(text):
+    if model is None:
+        return "Gemini is not configured."
+    try:
+        response = model.generate_content(f"Summarize this text:\n{text[:5000]}")  # Gemini token limit handling
+        return response.text
+    except Exception as e:
+        logging.error(f"PDF/TXT Summary error: {e}")
+        return "Error summarizing the text."
 
+# Function: Process Uploaded File for Summary
 def process_uploaded_file(uploaded_file):
     try:
         if uploaded_file.type == "text/plain":
@@ -81,31 +88,26 @@ def process_uploaded_file(uploaded_file):
         elif uploaded_file.type == "application/pdf":
             import PyPDF2
             reader = PyPDF2.PdfReader(uploaded_file)
-            text = "\n".join([page.extract_text() or "" for page in reader.pages])
-            if not text.strip():
-                raise ValueError("Extracted text is empty.")
+            text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
         else:
             return "Unsupported file type."
-
-        summary = summarize_text(text)
-        if not summary.strip():
-            raise ValueError("Summarization returned an empty response.")
-        return summary
+        return summarize_text_with_gemini(text)
     except Exception as e:
-        logging.error(f"PDF/TXT Summary error: {e}")
-        return f"Error processing file: {e}"
-
+        logging.error(f"File processing error: {e}")
+        return "Error processing the file."
 
 # Function: Image Description using Hugging Face
 def describe_image(image):
-    headers = {"Authorization": f"Bearer {st.secrets['HF_API_KEY']}"}
+    HF_API_KEY = st.secrets["HF_API_KEY"]
+    HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
     buffered = io.BytesIO()
     image.save(buffered, format="JPEG")
     encoded_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
     payload = {"inputs": encoded_image}
     
     try:
-        response = requests.post("https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large", headers=headers, json=payload)
+        response = requests.post(f"https://api-inference.huggingface.co/models/{HF_IMAGE_MODEL}", headers=headers, json=payload)
         return response.json()[0]['generated_text']
     except Exception as e:
         logging.error(f"Image description error: {e}")
@@ -142,6 +144,10 @@ if "context" not in st.session_state:
 # Feature Selection
 feature = st.selectbox("Select a feature:", ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description"])
 
+# Ensure valid feature
+if feature not in ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description"]:
+    feature = "General Chat"
+
 # Display Chat History
 st.markdown("### 💬 Chat History")
 st.write("---")
@@ -159,6 +165,7 @@ user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...
 if st.button("Send"):
     if user_input:
         st.session_state["chat_history"].append(("You", user_input))
+
         if feature == "Wikipedia Search":
             response = search_wikipedia(user_input)
         elif feature == "Wolfram Alpha Queries":
@@ -166,7 +173,8 @@ if st.button("Send"):
         elif feature == "General Chat":
             response = query_google_gemini(user_input, st.session_state["context"])
         else:
-            response = "Invalid feature."
+            response = "Feature not supported."
+
         st.session_state["chat_history"].append(("S.A.N.A", response))
         st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
         st.experimental_rerun()
@@ -189,8 +197,9 @@ if feature == "Image Description":
         st.markdown(f"**🖼️ Description:** {description}")
 
     # Take Picture Button
-    if st.camera_input("Take a picture"):
-        captured_image = Image.open(st.camera_input("Take a picture"))
-        st.image(captured_image, caption="Captured Image", use_column_width=True)
-        description = describe_image(captured_image)
+    captured_image = st.camera_input("Take a picture")
+    if captured_image:
+        image = Image.open(captured_image)
+        st.image(image, caption="Captured Image", use_column_width=True)
+        description = describe_image(image)
         st.markdown(f"**🖼️ Description:** {description}")
