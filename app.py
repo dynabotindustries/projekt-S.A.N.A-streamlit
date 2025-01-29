@@ -35,6 +35,12 @@ except KeyError:
     st.error("Error: APP_ID not found in Streamlit secrets.")
     wolfram_client = None
 
+# Hugging Face API for Image Description, PDF Summary & Image Generation
+HF_API_KEY = st.secrets["HF_API_KEY"]
+HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
+HF_SUMMARY_MODEL = "facebook/bart-large-cnn"
+HF_GEN_MODEL = "stabilityai/stable-diffusion-2"
+
 # Function: Wikipedia Search
 def search_wikipedia(query):
     try:
@@ -74,13 +80,12 @@ def summarize_text_with_gemini(text):
     if model is None:
         return "Gemini is not configured."
     try:
-        response = model.generate_content(f"Summarize this text:\n{text[:5000]}")  # Gemini token limit handling
+        response = model.generate_content(f"Summarize the following text:\n\n{text}")
         return response.text
     except Exception as e:
-        logging.error(f"PDF/TXT Summary error: {e}")
+        logging.error(f"Gemini Summary error: {e}")
         return "Error summarizing the text."
 
-# Function: Process Uploaded File for Summary
 def process_uploaded_file(uploaded_file):
     try:
         if uploaded_file.type == "text/plain":
@@ -98,8 +103,6 @@ def process_uploaded_file(uploaded_file):
 
 # Function: Image Description using Hugging Face
 def describe_image(image):
-    HF_API_KEY = st.secrets["HF_API_KEY"]
-    HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
     headers = {"Authorization": f"Bearer {HF_API_KEY}"}
     buffered = io.BytesIO()
     image.save(buffered, format="JPEG")
@@ -112,6 +115,18 @@ def describe_image(image):
     except Exception as e:
         logging.error(f"Image description error: {e}")
         return "Error describing the image."
+
+# Function: Image Generation using Stable Diffusion
+def generate_image(prompt):
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+    data = {"inputs": prompt}
+    try:
+        response = requests.post(f"https://api-inference.huggingface.co/models/{HF_GEN_MODEL}", headers=headers, json=data)
+        image_bytes = base64.b64decode(response.json()["generated_image"])
+        return Image.open(io.BytesIO(image_bytes))
+    except Exception as e:
+        logging.error(f"Image generation error: {e}")
+        return None
 
 # Streamlit App
 st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
@@ -133,7 +148,7 @@ with st.sidebar:
     st.title("S.A.N.A Settings")
     st.markdown("⚙️ **Customize your assistant experience (coming soon!)**")
     st.markdown("---")
-    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat\n4. PDF/TXT Summary\n5. Image Description")
+    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat\n4. PDF/TXT Summary\n5. Image Description\n6. Image Generation")
 
 # Initialize session variables
 if "chat_history" not in st.session_state:
@@ -142,11 +157,7 @@ if "context" not in st.session_state:
     st.session_state["context"] = ""
 
 # Feature Selection
-feature = st.selectbox("Select a feature:", ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description"])
-
-# Ensure valid feature
-if feature not in ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description"]:
-    feature = "General Chat"
+feature = st.selectbox("Select a feature:", ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description", "Image Generation"])
 
 # Display Chat History
 st.markdown("### 💬 Chat History")
@@ -165,7 +176,6 @@ user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...
 if st.button("Send"):
     if user_input:
         st.session_state["chat_history"].append(("You", user_input))
-
         if feature == "Wikipedia Search":
             response = search_wikipedia(user_input)
         elif feature == "Wolfram Alpha Queries":
@@ -173,8 +183,7 @@ if st.button("Send"):
         elif feature == "General Chat":
             response = query_google_gemini(user_input, st.session_state["context"])
         else:
-            response = "Feature not supported."
-
+            response = "Invalid feature."
         st.session_state["chat_history"].append(("S.A.N.A", response))
         st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
         st.experimental_rerun()
@@ -196,10 +205,12 @@ if feature == "Image Description":
         description = describe_image(image)
         st.markdown(f"**🖼️ Description:** {description}")
 
-    # Take Picture Button
-    captured_image = st.camera_input("Take a picture")
-    if captured_image:
-        image = Image.open(captured_image)
-        st.image(image, caption="Captured Image", use_column_width=True)
-        description = describe_image(image)
-        st.markdown(f"**🖼️ Description:** {description}")
+# Image Generation
+if feature == "Image Generation":
+    prompt = st.text_input("Enter a prompt for image generation:")
+    if st.button("Generate Image"):
+        generated_image = generate_image(prompt)
+        if generated_image:
+            st.image(generated_image, caption="Generated Image", use_column_width=True)
+        else:
+            st.error("Error generating the image.")
