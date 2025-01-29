@@ -2,109 +2,140 @@ import streamlit as st
 import wikipedia
 import wolframalpha
 import google.generativeai as genai
+import logging
+import base64
 import requests
 from PIL import Image
 import io
-import logging
 
 # Configure logging
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# Google Gemini API Configuration
+# APP logo
+logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
+
+# Google Gemini API key
 try:
     GENAI_API_KEY = st.secrets["GENAI_API_KEY"]
     genai.configure(api_key=GENAI_API_KEY)
-    system_prompt = '''You are S.A.N.A (Secure Autonomous Non-Intrusive Assistant), a smart, privacy-respecting AI'''
+    system_prompt = "You are S.A.N.A (Secure Autonomous Non-Intrusive Assistant), a smart, privacy-respecting AI"
     model = genai.GenerativeModel(
         model_name="gemini-2.0-flash-exp",
         system_instruction=[system_prompt]
     )
 except KeyError:
-    st.error("Error: GENAI_API_KEY not found in Streamlit secrets. Please configure it.")
-    model = None
-except Exception as e:
-    st.error(f"Error initializing Gemini: {e}")
+    st.error("Error: GENAI_API_KEY not found in Streamlit secrets.")
     model = None
 
-# WolframAlpha Configuration
+# WolframAlpha API key
 try:
     APP_ID = st.secrets["APP_ID"]
     wolfram_client = wolframalpha.Client(APP_ID)
 except KeyError:
-    st.error("Error: APP_ID not found in Streamlit secrets. Please configure it.")
-    wolfram_client = None
-except Exception as e:
-    st.error(f"Error initializing Wolfram Alpha client: {e}")
+    st.error("Error: APP_ID not found in Streamlit secrets.")
     wolfram_client = None
 
-# Hugging Face API Configuration for Image Description
-HF_API_URL = "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning"
+# Hugging Face API for Image Description & PDF Summary
 HF_API_KEY = st.secrets["HF_API_KEY"]
-headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
+HF_SUMMARY_MODEL = "facebook/bart-large-cnn"
 
-# Functions
+# Function: Wikipedia Search
 def search_wikipedia(query):
     try:
-        result = wikipedia.summary(query, sentences=2)
-        return result
+        return wikipedia.summary(query, sentences=2)
     except wikipedia.exceptions.DisambiguationError as e:
-        return "Multiple meanings detected. Please specify: " + ", ".join(e.options[:5])
+        return "Multiple meanings detected: " + ", ".join(e.options[:5])
     except wikipedia.exceptions.PageError:
-        return "No results found on Wikipedia."
+        return "No results found."
     except Exception as e:
         logging.error(f"Wikipedia error: {e}")
-        return "An error occurred while searching Wikipedia."
+        return "Error while searching Wikipedia."
 
+# Function: Wolfram Alpha Query
 def query_wolfram_alpha(query):
     if wolfram_client is None:
-        return "Wolfram Alpha is not configured."
+        return "Wolfram Alpha not configured."
     try:
         res = wolfram_client.query(query)
         return next(res.results).text
     except Exception as e:
         logging.error(f"Wolfram Alpha error: {e}")
-        return "An error occurred while querying Wolfram Alpha."
+        return "Error querying Wolfram Alpha."
 
+# Function: Gemini Chat
 def query_google_gemini(query, context):
     if model is None:
         return "Gemini is not configured."
     try:
-        conversation_input = context + f"\nUser: {query}\nAssistant:"
-        response = model.generate_content(conversation_input)
+        response = model.generate_content(context + f"\nUser: {query}\nAssistant:")
         return response.text
-    except genai.types.generation.GenerationError as e:
-        logging.error(f"Gemini Generation Error: {e}")
-        return f"Gemini encountered an error during generation: {e.message}"
     except Exception as e:
         logging.error(f"Gemini error: {e}")
-        return f"An error occurred while fetching from Google Gemini: {e}"
+        return "Error fetching from Gemini."
 
-def describe_image(image):
+# Function: PDF/TXT Summarization using Hugging Face
+def summarize_text(text):
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+    data = {"inputs": text, "parameters": {"max_length": 150, "min_length": 50, "do_sample": False}}
     try:
-        buffer = io.BytesIO()
-        image.save(buffer, format="JPEG")
-        buffer.seek(0)
-        payload = buffer.read()
-        response = requests.post(HF_API_URL, headers=headers, data=payload)
-        response.raise_for_status()
-        result = response.json()
-        return result[0]["generated_text"]
+        response = requests.post(f"https://api-inference.huggingface.co/models/{HF_SUMMARY_MODEL}", headers=headers, json=data)
+        return response.json()[0]['summary_text']
+    except Exception as e:
+        logging.error(f"PDF/TXT Summary error: {e}")
+        return "Error summarizing the text."
+
+def process_uploaded_file(uploaded_file):
+    try:
+        if uploaded_file.type == "text/plain":
+            text = uploaded_file.read().decode("utf-8")
+        elif uploaded_file.type == "application/pdf":
+            import PyPDF2
+            reader = PyPDF2.PdfReader(uploaded_file)
+            text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+        else:
+            return "Unsupported file type."
+        return summarize_text(text)
+    except Exception as e:
+        logging.error(f"File processing error: {e}")
+        return "Error processing the file."
+
+# Function: Image Description using Hugging Face
+def describe_image(image):
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+    buffered = io.BytesIO()
+    image.save(buffered, format="JPEG")
+    encoded_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    payload = {"inputs": encoded_image}
+    
+    try:
+        response = requests.post(f"https://api-inference.huggingface.co/models/{HF_IMAGE_MODEL}", headers=headers, json=payload)
+        return response.json()[0]['generated_text']
     except Exception as e:
         logging.error(f"Image description error: {e}")
-        return "Failed to describe the image."
+        return "Error describing the image."
 
-# App Configuration
-logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
+# Streamlit App
 st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
+
+# Title with Logo
+st.markdown(
+    f"""
+    <div style="display: flex; align-items: center;">
+        <img src="{logo}" width="50" style="margin-right: 15px;">
+        <h1 style="margin: 0;">Projekt S.A.N.A</h1>
+    </div>
+    """, unsafe_allow_html=True
+)
+
+st.markdown("**S.A.N.A** is a secure, autonomous, and non-intrusive virtual assistant. 😊")
 
 # Sidebar
 with st.sidebar:
-    st.image(logo, width=120)
     st.title("S.A.N.A Settings")
     st.markdown("⚙️ **Customize your assistant experience (coming soon!)**")
     st.markdown("---")
-    st.markdown("Available features:")
-    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. General Chat\n4. Image Description")
+    st.markdown("1. Wikipedia Search\n2. Wolfram Alpha Queries\n3. Google Gemini Chat\n4. PDF/TXT Summary\n5. Image Description")
 
 # Initialize session variables
 if "chat_history" not in st.session_state:
@@ -112,93 +143,58 @@ if "chat_history" not in st.session_state:
 if "context" not in st.session_state:
     st.session_state["context"] = ""
 
-# Main Layout
-st.markdown(
-    f"""
-    <div style="display: flex; align-items: center;">
-        <img src="{logo}" alt="Logo" style="width: 50px; margin-right: 15px;">
-        <h1 style="margin: 0;">Projekt S.A.N.A</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown("""
-Welcome to **S.A.N.A**: A secure, autonomous, and non-intrusive assistant. Select a feature below to interact.
-""")
-
 # Feature Selection
-feature = st.selectbox("Select a feature to use:",
-                       ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "Image Description"], index=0)
+feature = st.selectbox("Select a feature:", ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description"])
 
 # Display Chat History
-if feature != "Image Description":
-    st.markdown("### 💬 Chat History")
-    st.write("---")
-    for sender, message in st.session_state["chat_history"]:
-        if sender == "You":
-            st.markdown(f"**🧑‍💻 You:** {message}")
-        elif sender == "S.A.N.A":
-            st.markdown(f"🤖 **S.A.N.A:** {message}")
-        else:
-            st.markdown(f"**❗Unknown Sender:** {message}")
+st.markdown("### 💬 Chat History")
+st.write("---")
+for sender, message in st.session_state["chat_history"]:
+    if sender == "You":
+        st.markdown(f"**🧑‍💻 You:** {message}")
+    else:
+        st.markdown(f"<b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
+
+st.write("---")
 
 # User Input
-if feature != "Image Description":
-    user_input = st.text_input("💬 Type your query below:", placeholder="Ask anything...")
-    if st.button("Send"):
-        if user_input:
-            st.session_state["chat_history"].append(("You", user_input))
-            try:
-                if feature == "Wikipedia Search":
-                    response = search_wikipedia(user_input)
-                elif feature == "Wolfram Alpha Queries":
-                    response = query_wolfram_alpha(user_input)
-                elif feature == "General Chat":
-                    response = query_google_gemini(user_input, st.session_state["context"])
-                else:
-                    response = "Invalid feature selected."
+user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
 
-                st.session_state["chat_history"].append(("S.A.N.A", response))
-                st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-            except Exception as e:
-                logging.error(f"Main processing error: {e}")
-                st.error(f"An unexpected error occurred: {e}")
-                st.session_state["chat_history"].append(("S.A.N.A", "An unexpected error occurred. Please check the logs."))
+if st.button("Send"):
+    if user_input:
+        st.session_state["chat_history"].append(("You", user_input))
+        if feature == "Wikipedia Search":
+            response = search_wikipedia(user_input)
+        elif feature == "Wolfram Alpha Queries":
+            response = query_wolfram_alpha(user_input)
+        elif feature == "General Chat":
+            response = query_google_gemini(user_input, st.session_state["context"])
+        else:
+            response = "Invalid feature."
+        st.session_state["chat_history"].append(("S.A.N.A", response))
+        st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+        st.experimental_rerun()
 
-            st.experimental_rerun()
-
-    # Clear History Button
-    if st.button("Clear Chat History"):
-        st.session_state["chat_history"] = []
-        st.session_state["context"] = ""
-        st.success("Chat history cleared!")
-
-# Image Description Feature
-if feature == "Image Description":
-    st.markdown("### 🖼️ Image Description")
-    st.markdown("Upload an image or take a picture to generate a description of it.")
-
-    uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
+# PDF/TXT Summary
+if feature == "PDF/TXT Summary":
+    uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
     if uploaded_file:
-        image = Image.open(uploaded_file)
+        st.success("File uploaded successfully!")
+        summary = process_uploaded_file(uploaded_file)
+        st.markdown(f"**📜 Summary:** {summary}")
+
+# Image Description
+if feature == "Image Description":
+    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+    if uploaded_image:
+        image = Image.open(uploaded_image)
         st.image(image, caption="Uploaded Image", use_column_width=True)
-        with st.spinner("Generating description..."):
-            description = describe_image(image)
-            st.success("Description Generated!")
-            st.write(description)
+        description = describe_image(image)
+        st.markdown(f"**🖼️ Description:** {description}")
 
-    st.markdown("---")
-    st.write("Or, take a picture using your camera:")
-    picture = st.camera_input("Take a Picture")
-    if picture:
-        image = Image.open(picture)
-        st.image(image, caption="Captured Image", use_column_width=True)
-        with st.spinner("Generating description..."):
-            description = describe_image(image)
-            st.success("Description Generated!")
-            st.write(description)
-
-# Footer
-st.write("---")
-st.markdown("Powered by Hugging Face, Wolfram Alpha, Wikipedia, and Google Gemini.")
+    # Take Picture Button
+    if st.camera_input("Take a picture"):
+        captured_image = Image.open(st.camera_input("Take a picture"))
+        st.image(captured_image, caption="Captured Image", use_column_width=True)
+        description = describe_image(captured_image)
+        st.markdown(f"**🖼️ Description:** {description}")
