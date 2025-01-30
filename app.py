@@ -162,7 +162,7 @@ for sender, message in st.session_state["chat_history"]:
 
 st.write("---")
 
-if feature in ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"] :
+if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wolfram Alpha Queries":
     user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
     
     if st.button("Send"):
