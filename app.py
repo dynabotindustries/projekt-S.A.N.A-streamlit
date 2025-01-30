@@ -132,20 +132,20 @@ st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
 
 st.markdown(
     f"""
-    <div style="display: flex; align-items: center;">
-        <img src="{logo}" width="50" style="margin-right: 15px;">
-        <h1 style="margin: 0;">Projekt S.A.N.A</h1>
+    <div style='display: flex; align-items: center;'>
+        <img src='{logo}' width='50' style='margin-right: 15px;'>
+        <h1 style='margin: 0;'>Projekt S.A.N.A</h1>
     </div>
-    """, unsafe_allow_html=True
+    """, unsafe_allow_html=True    # to prevent streamlit from rendering the html as plaintext
 )
 
 st.markdown("**S.A.N.A** is a secure, autonomous, and non-intrusive virtual assistant. 😊")
 
-with st.sidebar:
+with st.sidebar:    # sidebar features
     st.title("S.A.N.A Settings")
     st.markdown("⚙️ **Customize your assistant experience (coming soon!)**")
     st.markdown("---")
-    feature = st.selectbox("Select a feature:", ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description", "Image Generation"])
+    feature = st.selectbox("Select a feature:", ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description", "Image Generation"])    # Feature selection
 
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
@@ -162,22 +162,23 @@ for sender, message in st.session_state["chat_history"]:
 
 st.write("---")
 
-user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
-
-if st.button("Send"):
-    if user_input:
-        st.session_state["chat_history"].append(("You", user_input))
-        if feature == "Wikipedia Search":
-            response = search_wikipedia(user_input)
-        elif feature == "Wolfram Alpha Queries":
-            response = query_wolfram_alpha(user_input)
-        elif feature == "General Chat":
-            response = query_google_gemini(user_input, st.session_state["context"])
-        else:
-            response = "Invalid feature."
-        st.session_state["chat_history"].append(("S.A.N.A", response))
-        st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-        st.experimental_rerun()
+if feature in ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"] :
+    user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
+    
+    if st.button("Send"):
+        if user_input:
+            st.session_state["chat_history"].append(("You", user_input))
+            if feature == "Wikipedia Search":
+                response = search_wikipedia(user_input)
+            elif feature == "Wolfram Alpha Queries":
+                response = query_wolfram_alpha(user_input)
+            elif feature == "General Chat":
+                response = query_google_gemini(user_input, st.session_state["context"])
+            else:
+                response = "Invalid feature."
+            st.session_state["chat_history"].append(("S.A.N.A", response))
+            st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+            st.experimental_rerun()
 
 if feature == "PDF/TXT Summary":
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
