@@ -133,7 +133,7 @@ st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
 st.markdown(
     f"""
     <div style='display: flex; align-items: center;'>
-        <img src='{logo}' width='20' style='margin-right: 15px;'>
+        <img src='{logo}' width='50' style='margin-right: 15px;'>
         <h1 style='margin: 0;'>Projekt S.A.N.A</h1>
     </div>
     """, unsafe_allow_html=True    # to prevent streamlit from rendering the html as plaintext
