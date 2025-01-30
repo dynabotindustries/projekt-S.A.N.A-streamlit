@@ -184,6 +184,7 @@ if feature == "PDF/TXT Summary":
     if "pdf" not in st.session_state:
         st.session_state["pdf"] = ""
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
+    summary = ""
     if uploaded_file:
         if uploaded_file != st.session_state["pdf"]:
             st.session_state["chat_history"].append(("You", uploaded_file.name))
