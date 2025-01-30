@@ -7,6 +7,9 @@ import requests
 from PIL import Image
 import io
 
+# Ensure set_page_config is the first command
+st.set_page_config(page_title="Projekt S.A.N.A", page_icon="🤖", layout="wide")
+
 # Set API Keys
 GENAI_API_KEY = st.secrets["GENAI_API_KEY"]
 APP_ID = st.secrets["APP_ID"]
@@ -38,8 +41,6 @@ with st.sidebar:
 # Initialize Session State
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
-
-st.set_page_config(page_title="Projekt S.A.N.A", page_icon="🤖", layout="wide")
 
 # Display Chat History
 st.markdown("## 💬 Chat History")
