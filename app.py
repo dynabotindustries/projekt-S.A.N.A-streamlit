@@ -193,9 +193,8 @@ if feature == "PDF/TXT Summary":
             st.session_state["chat_history"].append(("S.A.N.A", summary))
             st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"
             st.session_state["pdf"] = uploaded_file
-            
-            st.markdown(f"**📜 Summary:** {summary}")
             st.experimental_rerun()
+            st.markdown(f"**📜 Summary:** {summary}")
         
 
 if feature == "Image Description":
