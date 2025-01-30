@@ -185,7 +185,7 @@ if feature == "PDF/TXT Summary":
         st.session_state["pdf"] = ""
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
     if uploaded_file and uploaded_file != st.session_state["pdf"]:
-        st.session_state["chat_history"].append(("You", uploaded_file.name()))
+        st.session_state["chat_history"].append(("You", uploaded_file.name))
         st.success("File uploaded successfully!")
         summary = process_uploaded_file(uploaded_file)
         st.markdown(f"**📜 Summary:** {summary}")
