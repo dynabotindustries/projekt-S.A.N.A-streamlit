@@ -183,9 +183,13 @@ if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wol
 if feature == "PDF/TXT Summary":
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
     if uploaded_file:
+        st.session_state["chat_history"].append(("You", uploaded_file))
         st.success("File uploaded successfully!")
         summary = process_uploaded_file(uploaded_file)
         st.markdown(f"**📜 Summary:** {summary}")
+        st.session_state["chat_history"].append(("S.A.N.A", summary))
+        st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"
+        st.experimental_rerun()
 
 if feature == "Image Description":
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
