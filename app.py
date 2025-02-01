@@ -5,12 +5,21 @@ import google.generativeai as genai
 import logging
 import base64
 import requests
-from PIL import Image
+from PIL import Image, ImageFilter
 import io
+
+# For OCR
+import pytesseract
+
+# For segmentation (caching the model to avoid re-loading)
+import torch
+from torchvision import models, transforms
 
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
 logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
+
+### API Configuration ###
 
 try:
     GENAI_API_KEY = st.secrets["GENAI_API_KEY"]
@@ -35,6 +44,8 @@ HF_API_KEY = st.secrets["HF_API_KEY"]
 HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
 HF_SUMMARY_MODEL = "facebook/bart-large-cnn"
 HF_GEN_MODEL = "stabilityai/stable-diffusion-2"
+
+### Core Functions ###
 
 def search_wikipedia(query):
     try:
@@ -128,29 +139,81 @@ def generate_image(prompt):
         logging.error(f"Image generation error: {e}")
         return None
 
+### Enhanced Image Processing Functions ###
+
+# 1. Image OCR using pytesseract
+def image_ocr(image):
+    image = image.convert("RGB")
+    return pytesseract.image_to_string(image)
+
+# 2. Image Filtering using PIL filters
+def apply_filter(image, filter_type="BLUR"):
+    if filter_type == "BLUR":
+        return image.filter(ImageFilter.BLUR)
+    elif filter_type == "CONTOUR":
+        return image.filter(ImageFilter.CONTOUR)
+    elif filter_type == "DETAIL":
+        return image.filter(ImageFilter.DETAIL)
+    else:
+        return image
+
+# 3. Image Segmentation using a pre-trained DeepLabV3 model
+@st.cache_resource
+def load_segmentation_model():
+    model_seg = models.segmentation.deeplabv3_resnet101(pretrained=True).eval()
+    return model_seg
+
+segmentation_model = load_segmentation_model()
+
+def segment_image(image):
+    preprocess = transforms.Compose([
+         transforms.ToTensor(),
+         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    input_tensor = preprocess(image).unsqueeze(0)
+    with torch.no_grad():
+         output = segmentation_model(input_tensor)['out'][0]
+    output_predictions = output.argmax(0)
+    # Convert the tensor to a NumPy array for display
+    return output_predictions.byte().cpu().numpy()
+
+### Streamlit UI Setup ###
+
 st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
 
 st.markdown(
     f"""
-    <div style='display: flex; align-items: center;'>
-        <img src='{logo}' width='50' style='margin-right: 15px;'>
-        <h1 style='margin: 0;'>Projekt S.A.N.A</h1>
+    <div style="display: flex; align-items: center;">
+        <img src="{logo}" width="50" style="margin-right: 15px;">
+        <h1 style="margin: 0;">Projekt S.A.N.A</h1>
     </div>
-    """, unsafe_allow_html=True    # to prevent streamlit from rendering the html as plaintext
+    """, unsafe_allow_html=True
 )
 
 st.markdown("**S.A.N.A** is a secure, autonomous, and non-intrusive virtual assistant. 😊")
 
-with st.sidebar:    # sidebar features
+with st.sidebar:
     st.title("S.A.N.A Settings")
     st.markdown("⚙️ **Customize your assistant experience (coming soon!)**")
     st.markdown("---")
-    feature = st.selectbox("Select a feature:", ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries", "PDF/TXT Summary", "Image Description", "Image Generation"])    # Feature selection
+    feature = st.selectbox("Select a feature:", [
+        "General Chat", 
+        "Wikipedia Search", 
+        "Wolfram Alpha Queries", 
+        "PDF/TXT Summary", 
+        "Image Description", 
+        "Image Generation",
+        "Image OCR",
+        "Image Filtering",
+        "Image Segmentation"
+    ])
 
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
 if "context" not in st.session_state:
     st.session_state["context"] = ""
+
+### Chat History & General Chat ###
 
 st.markdown("### 💬 Chat History")
 st.write("---")
@@ -159,43 +222,33 @@ for sender, message in st.session_state["chat_history"]:
         st.markdown(f"**🧑‍💻 You:** {message}")
     else:
         st.markdown(f"<b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
-
 st.write("---")
 
-if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wolfram Alpha Queries":
-    user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
-    
-    if st.button("Send"):
-        if user_input:
-            st.session_state["chat_history"].append(("You", user_input))
-            if feature == "Wikipedia Search":
-                response = search_wikipedia(user_input)
-            elif feature == "Wolfram Alpha Queries":
-                response = query_wolfram_alpha(user_input)
-            elif feature == "General Chat":
-                response = query_google_gemini(user_input, st.session_state["context"])
-            else:
-                response = "Invalid feature."
-            st.session_state["chat_history"].append(("S.A.N.A", response))
-            st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-            st.experimental_rerun()
+user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
+
+if st.button("Send"):
+    if user_input:
+        st.session_state["chat_history"].append(("You", user_input))
+        if feature == "Wikipedia Search":
+            response = search_wikipedia(user_input)
+        elif feature == "Wolfram Alpha Queries":
+            response = query_wolfram_alpha(user_input)
+        elif feature == "General Chat":
+            response = query_google_gemini(user_input, st.session_state["context"])
+        else:
+            response = "Invalid feature."
+        st.session_state["chat_history"].append(("S.A.N.A", response))
+        st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+        st.experimental_rerun()
+
+### File and Image Processing Features ###
 
 if feature == "PDF/TXT Summary":
-    if "pdf" not in st.session_state:
-        st.session_state["pdf"] = ""
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
-    summary = ""
     if uploaded_file:
-        if uploaded_file != st.session_state["pdf"]:
-            st.session_state["chat_history"].append(("You", uploaded_file.name))
-            st.success("File uploaded successfully!")
-            summary = process_uploaded_file(uploaded_file)
-            st.session_state["chat_history"].append(("S.A.N.A", summary))
-            st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"
-            st.session_state["pdf"] = uploaded_file
-            st.experimental_rerun()
-        st.markdown(f"**📜 Summary:** {st.session_state["chat_history"][-1][1]}")
-        
+        st.success("File uploaded successfully!")
+        summary = process_uploaded_file(uploaded_file)
+        st.markdown(f"**📜 Summary:** {summary}")
 
 if feature == "Image Description":
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
@@ -222,3 +275,38 @@ if feature == "Image Generation":
                     st.image(generated_img, caption="🖼️ AI-Generated Image", use_column_width=True)
                 else:
                     st.error("Failed to generate image. Try a different prompt.")
+
+# Enhanced Image OCR
+if feature == "Image OCR":
+    uploaded_image = st.file_uploader("Upload an image for OCR", type=["jpg", "png", "jpeg"])
+    if uploaded_image:
+        image = Image.open(uploaded_image)
+        st.image(image, caption="Uploaded Image", use_column_width=True)
+        with st.spinner("Extracting text..."):
+            extracted_text = image_ocr(image)
+        st.markdown("**Extracted Text:**")
+        st.write(extracted_text)
+
+# Enhanced Image Filtering
+if feature == "Image Filtering":
+    uploaded_image = st.file_uploader("Upload an image to apply filters", type=["jpg", "png", "jpeg"])
+    if uploaded_image:
+        image = Image.open(uploaded_image)
+        st.image(image, caption="Original Image", use_column_width=True)
+        filter_option = st.selectbox("Choose a filter", ["None", "BLUR", "CONTOUR", "DETAIL"])
+        if st.button("Apply Filter"):
+            if filter_option != "None":
+                filtered_image = apply_filter(image, filter_option)
+                st.image(filtered_image, caption=f"Filtered Image ({filter_option})", use_column_width=True)
+            else:
+                st.image(image, caption="No Filter Applied", use_column_width=True)
+
+# Enhanced Image Segmentation
+if feature == "Image Segmentation":
+    uploaded_image = st.file_uploader("Upload an image for segmentation", type=["jpg", "png", "jpeg"])
+    if uploaded_image:
+        image = Image.open(uploaded_image)
+        st.image(image, caption="Original Image", use_column_width=True)
+        with st.spinner("Segmenting image..."):
+            segmentation_mask = segment_image(image)
+        st.image(segmentation_mask, caption="Segmentation Output", use_column_width=True)
