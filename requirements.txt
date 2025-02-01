@@ -3,3 +3,8 @@ wikipedia
 wolframalpha
 google-generativeai
 PyPDF2
+pytesseract
+requests
+pillow
+torch
+torchvision
