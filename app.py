@@ -1,4 +1,10 @@
 import streamlit as st
+st.set_page_config(
+    page_title="Projekt S.A.N.A",
+    page_icon="https://avatars.githubusercontent.com/u/175069629?v=4",
+    layout="wide"
+)
+
 import wikipedia
 import wolframalpha
 import google.generativeai as genai
@@ -19,7 +25,9 @@ logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %
 
 logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
 
-### API Configuration ###
+#####################################
+#         API Configuration         #
+#####################################
 
 try:
     GENAI_API_KEY = st.secrets["GENAI_API_KEY"]
@@ -45,7 +53,9 @@ HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
 HF_SUMMARY_MODEL = "facebook/bart-large-cnn"
 HF_GEN_MODEL = "stabilityai/stable-diffusion-2"
 
-### Core Functions ###
+#####################################
+#          Core Functions           #
+#####################################
 
 def search_wikipedia(query):
     try:
@@ -111,7 +121,11 @@ def describe_image(image):
     payload = {"inputs": encoded_image}
     
     try:
-        response = requests.post(f"https://api-inference.huggingface.co/models/{HF_IMAGE_MODEL}", headers=headers, json=payload)
+        response = requests.post(
+            f"https://api-inference.huggingface.co/models/{HF_IMAGE_MODEL}",
+            headers=headers,
+            json=payload
+        )
         return response.json()[0]['generated_text']
     except Exception as e:
         logging.error(f"Image description error: {e}")
@@ -139,7 +153,9 @@ def generate_image(prompt):
         logging.error(f"Image generation error: {e}")
         return None
 
-### Enhanced Image Processing Functions ###
+#####################################
+#     Enhanced Image Processing     #
+#####################################
 
 # 1. Image OCR using pytesseract
 def image_ocr(image):
@@ -174,12 +190,11 @@ def segment_image(image):
     with torch.no_grad():
          output = segmentation_model(input_tensor)['out'][0]
     output_predictions = output.argmax(0)
-    # Convert the tensor to a NumPy array for display
     return output_predictions.byte().cpu().numpy()
 
-### Streamlit UI Setup ###
-
-st.set_page_config(page_title="Projekt S.A.N.A", page_icon=logo, layout="wide")
+#####################################
+#          Streamlit UI             #
+#####################################
 
 st.markdown(
     f"""
@@ -213,7 +228,9 @@ if "chat_history" not in st.session_state:
 if "context" not in st.session_state:
     st.session_state["context"] = ""
 
-### Chat History & General Chat ###
+###############################
+#      Chat History & Chat    #
+###############################
 
 st.markdown("### 💬 Chat History")
 st.write("---")
@@ -241,8 +258,11 @@ if st.button("Send"):
         st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
         st.experimental_rerun()
 
-### File and Image Processing Features ###
+#####################################
+#  File and Image Processing Features
+#####################################
 
+# PDF/TXT Summary
 if feature == "PDF/TXT Summary":
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
     if uploaded_file:
@@ -250,6 +270,7 @@ if feature == "PDF/TXT Summary":
         summary = process_uploaded_file(uploaded_file)
         st.markdown(f"**📜 Summary:** {summary}")
 
+# Image Description
 if feature == "Image Description":
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
     if uploaded_image:
@@ -265,6 +286,7 @@ if feature == "Image Description":
         description = describe_image(image)
         st.markdown(f"**🖼️ Description:** {description}")
 
+# Image Generation
 if feature == "Image Generation":
     prompt = st.text_input("🎨 Enter a prompt for the AI-generated image:")
     if st.button("Generate Image"):
