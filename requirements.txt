@@ -7,5 +7,6 @@ pytesseract
 requests
 pillow
 torch
+opencv-python
 torchvision
 matplotlib
