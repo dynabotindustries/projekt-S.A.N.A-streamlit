@@ -181,16 +181,31 @@ def load_segmentation_model():
 
 segmentation_model = load_segmentation_model()
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 def segment_image(image):
     preprocess = transforms.Compose([
          transforms.ToTensor(),
          transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
     input_tensor = preprocess(image).unsqueeze(0)
+    
     with torch.no_grad():
          output = segmentation_model(input_tensor)['out'][0]
-    output_predictions = output.argmax(0)
-    return output_predictions.byte().cpu().numpy()
+
+    output_predictions = output.argmax(0).byte().cpu().numpy()
+
+    # Convert to a colored segmentation mask
+    def colorize_mask(mask):
+        colors = np.random.randint(0, 255, (21, 3))  # 21 segmentation classes in DeepLabV3
+        rgb_mask = np.zeros((*mask.shape, 3), dtype=np.uint8)
+        for class_id in range(21):
+            rgb_mask[mask == class_id] = colors[class_id]
+        return rgb_mask
+
+    return colorize_mask(output_predictions)
+
 
 #####################################
 #          Streamlit UI             #
