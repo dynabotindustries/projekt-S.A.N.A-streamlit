@@ -14,13 +14,20 @@ import requests
 import numpy as np
 from PIL import Image, ImageFilter
 import io
+import cv2
 
 # For OCR
 import pytesseract
 
 # For segmentation (caching the model to avoid re-loading)
 import torch
-from torchvision import models, transforms
+import torchvision.transforms as T
+from torchvision.models.segmentation import deeplabv3_mobilenet_v3_large
+
+# Load model with pre-trained weights
+model = deeplabv3_mobilenet_v3_large(pretrained=True)
+model.eval()  # Set model to evaluation mode
+
 
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -174,46 +181,31 @@ def apply_filter(image, filter_type="BLUR"):
     else:
         return image
 
-# 3. Image Segmentation using a pre-trained DeepLabV3 model
-@st.cache_resource
-def load_segmentation_model():
-    model_seg = models.segmentation.deeplabv3_resnet101(pretrained=True).eval()
-    return model_seg
-
-segmentation_model = load_segmentation_model()
-
-def segment_and_extract(image):
-    preprocess = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+def segment_image(image_path):
+    image = Image.open(image_path).convert("RGB")
+    
+    # Preprocess image
+    transform = T.Compose([
+        T.ToTensor(),
+        T.Resize((512, 512)),  # Resize for efficiency
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    
-    input_tensor = preprocess(image).unsqueeze(0)
+    img_tensor = transform(image).unsqueeze(0)  # Add batch dimension
 
+    # Run inference
     with torch.no_grad():
-        output = segmentation_model(input_tensor)['out'][0]
+        output = model(img_tensor)['out'][0]  # Get segmentation output
     
-    output_predictions = output.argmax(0).byte().cpu().numpy()
+    # Convert to mask
+    mask = output.argmax(0).byte().cpu().numpy()
+    
+    # Apply mask to original image
+    segmented = np.array(image) * np.expand_dims(mask, axis=-1)  # Keep only segmented regions
+    return segmented
 
-    # Create an empty mask (black background)
-    mask = np.zeros_like(output_predictions, dtype=np.uint8)
-
-    # Pick a class (for example, the largest segmented area)
-    main_class = np.bincount(output_predictions.flatten()).argmax()
-
-    # Extract only the main class region
-    mask[output_predictions == main_class] = 255  
-
-    # Convert to 3-channel for image masking
-    mask_3channel = np.stack([mask] * 3, axis=-1)
-
-    # Convert PIL image to NumPy array
-    image_np = np.array(image)
-
-    # Apply mask: Keeps only the segmented part, sets other areas to black
-    extracted = np.where(mask_3channel == 255, image_np, 0)
-
-    return extracted
+# Example Usage
+segmented_img = segment_image("your_image.jpg")
+cv2.imwrite("segmented_output.png", segmented_img)
 
 
 #####################################
