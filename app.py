@@ -324,14 +324,16 @@ if feature == "Image Generation":
 
 # Enhanced Image OCR
 if feature == "Image OCR":
-    uploaded_image = st.file_uploader("Upload an image for OCR", type=["jpg", "png", "jpeg"])
-    if uploaded_image:
-        image = Image.open(uploaded_image)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
-        with st.spinner("Extracting text..."):
-            extracted_text = image_ocr(image)
-        st.markdown("**Extracted Text:**")
-        st.write(extracted_text)
+    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+    camera_image = st.camera_input("Capture an image")
+
+    if uploaded_image or camera_image:
+        image = Image.open(uploaded_image or camera_image)
+        st.image(image, caption="Selected Image", use_column_width=True)
+
+        extracted_text = extract_text(image)
+        st.text_area("Extracted Text", extracted_text, height=150)
+
 
 # Enhanced Image Filtering
 if feature == "Image Filtering":
