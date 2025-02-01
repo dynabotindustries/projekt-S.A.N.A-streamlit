@@ -201,11 +201,13 @@ def segment_image(image_path):
     
     # Apply mask to original image
     segmented = np.array(image) * np.expand_dims(mask, axis=-1)  # Keep only segmented regions
-    return segmented
+    
+    # Save the segmented image using PIL
+    segmented_image = Image.fromarray(segmented)
+    segmented_image.save("segmented_output.png")
+    
+    return segmented_image
 
-# Example Usage
-segmented_img = segment_image("your_image.jpg")
-cv2.imwrite("segmented_output.png", segmented_img)
 
 
 #####################################
