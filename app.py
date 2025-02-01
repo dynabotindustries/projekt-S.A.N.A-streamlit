@@ -342,13 +342,20 @@ if feature == "Image Filtering":
                 st.image(image, caption="No Filter Applied", use_column_width=True)
 
 # Enhanced Image Segmentation
+# Streamlit UI: Image Segmentation
 if feature == "Image Segmentation":
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+    
     if uploaded_image:
         image = Image.open(uploaded_image)
         st.image(image, caption="Original Image", use_column_width=True)
 
-        extracted_region = segment_and_extract(image)
-        st.image(extracted_region, caption="Extracted Region", use_column_width=True)
+        # Apply segmentation
+        segmented_img = segment_image(uploaded_image)
+        
+        # Convert the segmented image to an Image object to display
+        segmented_image = Image.fromarray(segmented_img)
+        
+        st.image(segmented_image, caption="Segmented Image", use_column_width=True)
 
 
