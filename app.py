@@ -14,8 +14,6 @@ import requests
 import numpy as np
 from PIL import Image, ImageFilter
 import io
-import cv2
-
 # For OCR
 import pytesseract
 
