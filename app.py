@@ -181,30 +181,38 @@ def load_segmentation_model():
 
 segmentation_model = load_segmentation_model()
 
-import numpy as np
-import matplotlib.pyplot as plt
-
-def segment_image(image):
+def segment_and_extract(image):
     preprocess = transforms.Compose([
-         transforms.ToTensor(),
-         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    input_tensor = preprocess(image).unsqueeze(0)
     
-    with torch.no_grad():
-         output = segmentation_model(input_tensor)['out'][0]
+    input_tensor = preprocess(image).unsqueeze(0)
 
+    with torch.no_grad():
+        output = segmentation_model(input_tensor)['out'][0]
+    
     output_predictions = output.argmax(0).byte().cpu().numpy()
 
-    # Convert to a colored segmentation mask
-    def colorize_mask(mask):
-        colors = np.random.randint(0, 255, (21, 3))  # 21 segmentation classes in DeepLabV3
-        rgb_mask = np.zeros((*mask.shape, 3), dtype=np.uint8)
-        for class_id in range(21):
-            rgb_mask[mask == class_id] = colors[class_id]
-        return rgb_mask
+    # Create an empty mask (black background)
+    mask = np.zeros_like(output_predictions, dtype=np.uint8)
 
-    return colorize_mask(output_predictions)
+    # Pick a class (for example, the largest segmented area)
+    main_class = np.bincount(output_predictions.flatten()).argmax()
+
+    # Extract only the main class region
+    mask[output_predictions == main_class] = 255  
+
+    # Convert to 3-channel for image masking
+    mask_3channel = np.stack([mask] * 3, axis=-1)
+
+    # Convert PIL image to NumPy array
+    image_np = np.array(image)
+
+    # Apply mask: Keeps only the segmented part, sets other areas to black
+    extracted = np.where(mask_3channel == 255, image_np, 0)
+
+    return extracted
 
 
 #####################################
@@ -345,6 +353,7 @@ if feature == "Image Segmentation":
         image = Image.open(uploaded_image)
         st.image(image, caption="Original Image", use_column_width=True)
 
-        segmented_colored = segment_image(image)
-        st.image(segmented_colored, caption="Segmented Image (Colorized)", use_column_width=True)
+        extracted_region = segment_and_extract(image)
+        st.image(extracted_region, caption="Extracted Region", use_column_width=True)
+
 
