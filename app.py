@@ -325,10 +325,11 @@ if feature == "Image Filtering":
 
 # Enhanced Image Segmentation
 if feature == "Image Segmentation":
-    uploaded_image = st.file_uploader("Upload an image for segmentation", type=["jpg", "png", "jpeg"])
+    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
     if uploaded_image:
         image = Image.open(uploaded_image)
         st.image(image, caption="Original Image", use_column_width=True)
-        with st.spinner("Segmenting image..."):
-            segmentation_mask = segment_image(image)
-        st.image(segmentation_mask, caption="Segmentation Output", use_column_width=True)
+
+        segmented_colored = segment_image(image)
+        st.image(segmented_colored, caption="Segmented Image (Colorized)", use_column_width=True)
+
