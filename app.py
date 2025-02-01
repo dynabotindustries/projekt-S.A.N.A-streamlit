@@ -14,6 +14,8 @@ import requests
 import numpy as np
 from PIL import Image, ImageFilter
 import io
+import cv2
+
 # For OCR
 import pytesseract
 
@@ -179,22 +181,31 @@ def apply_filter(image, filter_type="BLUR"):
     else:
         return image
 
-def segment_image(uploaded_image):
-    # Transform the uploaded image to the required format
-    preprocess = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+def segment_image(image_path):
+    image = Image.open(image_path).convert("RGB")
+    
+    # Preprocess image
+    transform = T.Compose([
+        T.ToTensor(),
+        T.Resize((512, 512)),  # Resize for efficiency
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    
-    image = Image.open(uploaded_image)
-    img_tensor = preprocess(image).unsqueeze(0)  # Add batch dimension
-    
-    with torch.no_grad():  # No need to track gradients
-        output = model(img_tensor)['out'][0]  # Get the segmentation output
-    
-    mask = output.argmax(0).byte().cpu().numpy()  # Convert to mask
-    return mask
+    img_tensor = transform(image).unsqueeze(0)  # Add batch dimension
 
+    # Run inference
+    with torch.no_grad():
+        output = model(img_tensor)['out'][0]  # Get segmentation output
+    
+    # Convert to mask
+    mask = output.argmax(0).byte().cpu().numpy()
+    
+    # Apply mask to original image
+    segmented = np.array(image) * np.expand_dims(mask, axis=-1)  # Keep only segmented regions
+    return segmented
+
+# Example Usage
+segmented_img = segment_image("your_image.jpg")
+cv2.imwrite("segmented_output.png", segmented_img)
 
 
 #####################################
@@ -331,20 +342,12 @@ if feature == "Image Filtering":
                 st.image(image, caption="No Filter Applied", use_column_width=True)
 
 # Enhanced Image Segmentation
-# Streamlit UI: Image Segmentation
 if feature == "Image Segmentation":
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
-    
     if uploaded_image:
         image = Image.open(uploaded_image)
         st.image(image, caption="Original Image", use_column_width=True)
 
-        # Apply segmentation
-        segmented_img = segment_image(uploaded_image)
-        
-        # Convert the segmented image to an Image object to display
-        segmented_image = Image.fromarray(segmented_img)
-        
-        st.image(segmented_image, caption="Segmented Image", use_column_width=True)
-
+        extracted_region = segment_and_extract(image)
+        st.image(extracted_region, caption="Extracted Region", use_column_width=True)
 
