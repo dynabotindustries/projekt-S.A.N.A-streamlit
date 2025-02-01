@@ -11,6 +11,7 @@ import google.generativeai as genai
 import logging
 import base64
 import requests
+import numpy as np
 from PIL import Image, ImageFilter
 import io
 
