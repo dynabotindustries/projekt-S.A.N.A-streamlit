@@ -179,32 +179,21 @@ def apply_filter(image, filter_type="BLUR"):
     else:
         return image
 
-def segment_image(image_path):
-    image = Image.open(image_path).convert("RGB")
-    
-    # Preprocess image
-    transform = T.Compose([
-        T.ToTensor(),
-        T.Resize((512, 512)),  # Resize for efficiency
-        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+def segment_image(uploaded_image):
+    # Transform the uploaded image to the required format
+    preprocess = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
-    img_tensor = transform(image).unsqueeze(0)  # Add batch dimension
-
-    # Run inference
-    with torch.no_grad():
-        output = model(img_tensor)['out'][0]  # Get segmentation output
     
-    # Convert to mask
-    mask = output.argmax(0).byte().cpu().numpy()
+    image = Image.open(uploaded_image)
+    img_tensor = preprocess(image).unsqueeze(0)  # Add batch dimension
     
-    # Apply mask to original image
-    segmented = np.array(image) * np.expand_dims(mask, axis=-1)  # Keep only segmented regions
+    with torch.no_grad():  # No need to track gradients
+        output = model(img_tensor)['out'][0]  # Get the segmentation output
     
-    # Save the segmented image using PIL
-    segmented_image = Image.fromarray(segmented)
-    segmented_image.save("segmented_output.png")
-    
-    return segmented_image
+    mask = output.argmax(0).byte().cpu().numpy()  # Convert to mask
+    return mask
 
 
 
