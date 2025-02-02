@@ -331,7 +331,7 @@ if feature == "Image OCR":
         image = Image.open(uploaded_image or camera_image)
         st.image(image, caption="Selected Image", use_column_width=True)
 
-        extracted_text = extract_text(image)
+        extracted_text = image_ocr(image)
         st.text_area("Extracted Text", extracted_text, height=150)
 
 
