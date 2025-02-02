@@ -265,8 +265,6 @@ for sender, message in st.session_state["chat_history"]:
         st.markdown(f"<b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
 st.write("---")
 
-user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
-
 if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wolfram Alpha Queries":
     user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
 
