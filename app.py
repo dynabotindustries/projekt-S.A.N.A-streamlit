@@ -174,10 +174,10 @@ def apply_filter(image, filter_type="BLUR"):
     else:
         return image
 
-# 3. Image Segmentation using a pre-trained DeepLabV3 model
+# 3. Image Segmentation using a pre-trained DeepLabV3 model with MobileNetV3
 @st.cache_resource
 def load_segmentation_model():
-    model_seg = models.segmentation.deeplabv3_resnet101(pretrained=True).eval()
+    model_seg = models.segmentation.deeplabv3_mobilenet_v3_large(pretrained=True).eval()
     return model_seg
 
 segmentation_model = load_segmentation_model()
