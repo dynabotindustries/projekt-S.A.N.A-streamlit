@@ -306,12 +306,21 @@ if feature == "PDF/TXT Summary":
 
 # Image Description
 if feature == "Image Description":
+    if "imgdes" not in st.session_state:
+        st.session_state["imgdes"] = ""
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+    udescription = ""
     if uploaded_image:
-        image = Image.open(uploaded_image)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
-        description = describe_image(image)
-        st.markdown(f"**🖼️ Description:** {description}")
+         if uploaded_image != st.session_state["imgdes"]:
+            st.session_state["chat_history"].append(("You", uploaded_image.name))
+            image = Image.open(uploaded_image)
+            st.image(image, caption="Uploaded Image", use_column_width=True)
+            udescription = describe_image(image)
+            st.session_state["chat_history"].append(("S.A.N.A", udescription))
+            st.session_state["context"] += f"User: Descripe the uploaded picture. \nAssistant: {udescription}\n"
+            st.session_state["imgdes"] = uploaded_image
+            st.experimental_rerun()
+         st.markdown(f"**🖼️ Description:** {st.session_state["chat_history"][-1][1]}")
 
     captured_image = st.camera_input("Take a picture")
     if captured_image:
