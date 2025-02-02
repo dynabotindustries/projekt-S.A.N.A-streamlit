@@ -222,9 +222,9 @@ def segment_and_extract(image):
 
 st.markdown(
     f"""
-    <div style="display: flex; align-items: center;">
-        <img src="{logo}" width="50" style="margin-right: 15px;">
-        <h1 style="margin: 0;">Projekt S.A.N.A</h1>
+    <div style='display: flex; align-items: center;'>
+        <img src='{logo}' width='50' style='margin-right: 15px;'>
+        <h1 style='margin: 0;'>Projekt S.A.N.A</h1>
     </div>
     """, unsafe_allow_html=True
 )
@@ -274,22 +274,24 @@ for sender, message in st.session_state["chat_history"]:
         st.markdown(f"<b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
 st.write("---")
 
-user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
+# The below if condition ensures that the user input field is not unnecessarily displayed in featues other than those listed in the conditioning. Do not remove
+if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wolfram Alpha Queries":
+    user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
 
-if st.button("Send"):
-    if user_input:
-        st.session_state["chat_history"].append(("You", user_input))
-        if feature == "Wikipedia Search":
-            response = search_wikipedia(user_input)
-        elif feature == "Wolfram Alpha Queries":
-            response = query_wolfram_alpha(user_input)
-        elif feature == "General Chat":
-            response = query_google_gemini(user_input, st.session_state["context"])
-        else:
-            response = "Invalid feature."
-        st.session_state["chat_history"].append(("S.A.N.A", response))
-        st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-        st.experimental_rerun()
+    if st.button("Send"):
+        if user_input:
+            st.session_state["chat_history"].append(("You", user_input))
+            if feature == "Wikipedia Search":
+                response = search_wikipedia(user_input)
+            elif feature == "Wolfram Alpha Queries":
+                response = query_wolfram_alpha(user_input)
+            elif feature == "General Chat":
+                response = query_google_gemini(user_input, st.session_state["context"])
+            else:
+                response = "Invalid feature."
+            st.session_state["chat_history"].append(("S.A.N.A", response))
+            st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+            st.experimental_rerun()
 
 #####################################
 #  File and Image Processing Features
