@@ -292,7 +292,12 @@ if feature == "PDF/TXT Summary":
     if uploaded_file:
         st.success("File uploaded successfully!")
         summary = process_uploaded_file(uploaded_file)
-        st.markdown(f"**📜 Summary:** {summary}")
+        # Append the summary to chat history so it appears there only
+        st.session_state["chat_history"].append(("S.A.N.A", f"📜 Summary: {summary}"))
+        # Optionally update the context if needed
+        st.session_state["context"] += f"Assistant (Summary): {summary}\n"
+        st.experimental_rerun()
+
 
 # Image Description
 if feature == "Image Description":
