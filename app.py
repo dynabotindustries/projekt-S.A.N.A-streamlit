@@ -288,15 +288,24 @@ if st.button("Send"):
 
 # PDF/TXT Summary
 if feature == "PDF/TXT Summary":
-    uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
-    if uploaded_file:
+    # Use a unique key for the uploader widget
+    uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"], key="pdf_uploader")
+    
+    # Create a flag in session_state to track if we've already processed this file
+    if "pdf_summary_done" not in st.session_state:
+        st.session_state["pdf_summary_done"] = False
+
+    if uploaded_file and not st.session_state["pdf_summary_done"]:
         st.success("File uploaded successfully!")
         summary = process_uploaded_file(uploaded_file)
-        # Append the summary to chat history so it appears there only
+        # Append the summary to chat history
         st.session_state["chat_history"].append(("S.A.N.A", f"📜 Summary: {summary}"))
         # Optionally update the context if needed
         st.session_state["context"] += f"Assistant (Summary): {summary}\n"
+        # Set the flag so we don't process again on rerun
+        st.session_state["pdf_summary_done"] = True
         st.experimental_rerun()
+
 
 
 # Image Description
