@@ -222,9 +222,9 @@ def segment_and_extract(image):
 
 st.markdown(
     f"""
-    <div style="display: flex; align-items: center;">
-        <img src="{logo}" width="50" style="margin-right: 15px;">
-        <h1 style="margin: 0;">Projekt S.A.N.A</h1>
+    <div style='display: flex; align-items: center;'>
+        <img src='{logo}' width='50' style='margin-right: 15px;'>
+        <h1 style='margin: 0;'>Projekt S.A.N.A</h1>
     </div>
     """, unsafe_allow_html=True
 )
@@ -267,20 +267,23 @@ st.write("---")
 
 user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
 
-if st.button("Send"):
-    if user_input:
-        st.session_state["chat_history"].append(("You", user_input))
-        if feature == "Wikipedia Search":
-            response = search_wikipedia(user_input)
-        elif feature == "Wolfram Alpha Queries":
-            response = query_wolfram_alpha(user_input)
-        elif feature == "General Chat":
-            response = query_google_gemini(user_input, st.session_state["context"])
-        else:
-            response = "Invalid feature."
-        st.session_state["chat_history"].append(("S.A.N.A", response))
-        st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-        st.experimental_rerun()
+if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wolfram Alpha Queries":
+    user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
+
+    if st.button("Send"):
+        if user_input:
+            st.session_state["chat_history"].append(("You", user_input))
+            if feature == "Wikipedia Search":
+                response = search_wikipedia(user_input)
+            elif feature == "Wolfram Alpha Queries":
+                response = query_wolfram_alpha(user_input)
+            elif feature == "General Chat":
+                response = query_google_gemini(user_input, st.session_state["context"])
+            else:
+                response = "Invalid feature."
+            st.session_state["chat_history"].append(("S.A.N.A", response))
+            st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+            st.experimental_rerun()
 
 #####################################
 #  File and Image Processing Features
@@ -288,11 +291,20 @@ if st.button("Send"):
 
 # PDF/TXT Summary
 if feature == "PDF/TXT Summary":
+    if "pdf" not in st.session_state:
+        st.session_state["pdf"] = ""
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
+    summary = ""
     if uploaded_file:
-        st.success("File uploaded successfully!")
-        summary = process_uploaded_file(uploaded_file)
-        st.markdown(f"**📜 Summary:** {summary}")
+        if uploaded_file != st.session_state["pdf"]:
+            st.session_state["chat_history"].append(("You", uploaded_file.name))
+            st.success("File uploaded successfully!")
+            summary = process_uploaded_file(uploaded_file)
+            st.session_state["chat_history"].append(("S.A.N.A", summary))
+            st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"
+            st.session_state["pdf"] = uploaded_file
+            st.experimental_rerun()
+        st.markdown(f"**📜 Summary:** {st.session_state["chat_history"][-1][1]}")
 
 # Image Description
 if feature == "Image Description":
