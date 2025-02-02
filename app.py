@@ -246,6 +246,15 @@ with st.sidebar:
         "Image Filtering",
         "Image Segmentation"
     ])
+    
+    # Clear History Button
+    if st.button("Clear Chat History"):
+        st.session_state["chat_history"] = []
+        st.session_state["context"] = ""
+        # Also reset any flags, for example, the PDF summary flag:
+        st.session_state["pdf_summary_done"] = False
+        st.experimental_rerun()
+
 
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
