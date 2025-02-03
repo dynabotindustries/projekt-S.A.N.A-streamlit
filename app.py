@@ -299,11 +299,19 @@ if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wol
 
 # PDF/TXT Summary
 if feature == "PDF/TXT Summary":
+    if "pdf" not in st.session_state:    # Check for pdf session variable
+        st.session_state["pdf"] = ""    # Create session variable to store last uploaded pdf
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
-    if uploaded_file:
-        st.success("File uploaded successfully!")
-        summary = process_uploaded_file(uploaded_file)
-        st.markdown(f"**📜 Summary:** {summary}")
+    if uploaded_file:    # If user uploads a file
+         if uploaded_file != st.session_state["pdf"]:    # Check whether the file was already uploaded. Proceed if a new file is uploaded
+            st.session_state["chat_history"].append(("You", uploaded_file.name))    # Add file details to chat history as "You"
+            st.success("File uploaded successfully!")
+            summary = process_uploaded_file(uploaded_file)
+            st.session_state["chat_history"].append(("S.A.N.A", summary))    # Add pdf summary as "SANA" output
+            st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"    # Add pdf and summary to session context
+            st.session_state["pdf"] = uploaded_file    # Set uploaded file to currently uploaded file to prevent processing it multiple times
+            st.experimental_rerun()    # Rerun page to reflect changes in chat history
+         st.markdown(f"**📜 Summary:** {st.session_state["chat_history"][-1][1]}")    # Seperately, show the summary if the uploaded file remains uploaded. Parse summary from chat history
 
 
 
