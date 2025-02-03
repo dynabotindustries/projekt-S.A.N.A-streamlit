@@ -229,7 +229,7 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-st.markdown("**S.A.N.A** is a secure, autonomous, and non-intrusive virtual assistant. 😊")
+st.markdown("**S**ecure **A**utonomous and **N**on-Intrusive **A**ssistant")
 
 with st.sidebar:
     st.title("S.A.N.A Settings")
