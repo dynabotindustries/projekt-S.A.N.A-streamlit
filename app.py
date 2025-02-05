@@ -253,7 +253,7 @@ with st.sidebar:
         st.session_state["context"] = ""
         # Also reset any flags, for example, the PDF summary flag:
         st.session_state["pdf_summary_done"] = False
-        st.experimental_rerun()
+        st.rerun()
 
 
 if "chat_history" not in st.session_state:
@@ -292,7 +292,7 @@ if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wol
                     response = "Invalid feature."
                 st.session_state["chat_history"].append(("S.A.N.A", response))
                 st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-                st.experimental_rerun()
+                st.rerun()
 
 #####################################
 #  File and Image Processing Features
@@ -311,7 +311,7 @@ if feature == "PDF/TXT Summary":
             st.session_state["chat_history"].append(("S.A.N.A", summary))    # Add pdf summary as "SANA" output
             st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"    # Add pdf and summary to session context
             st.session_state["pdf"] = uploaded_file    # Set uploaded file to currently uploaded file to prevent processing it multiple times
-            st.experimental_rerun()    # Rerun page to reflect changes in chat history
+            st.rerun()    # Rerun page to reflect changes in chat history
          st.markdown(f"**📜 Summary:** {st.session_state["chat_history"][-1][1]}")    # Seperately, show the summary if the uploaded file remains uploaded. Parse summary from chat history
 
 
