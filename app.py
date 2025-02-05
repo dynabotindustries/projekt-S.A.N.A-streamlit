@@ -277,10 +277,10 @@ st.write("---")
 # The below if condition ensures that the user input field is not unnecessarily displayed in featues other than those listed in the conditioning. Do not remove
 if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wolfram Alpha Queries":
     
-    with st.form("InputForm"):
+    with st.form("InputForm"):    # Bundle following code in a form to trigger submit for enter
         user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
-        if st.form_submit_button("Send"):
-            if user_input:
+        if st.form_submit_button("Send"):    # Create submit button (cumpulsory for st.form, ad is used as the send button)
+            if user_input: # Continue with user input as normal
                 st.session_state["chat_history"].append(("You", user_input))
                 if feature == "Wikipedia Search":
                     response = search_wikipedia(user_input)
