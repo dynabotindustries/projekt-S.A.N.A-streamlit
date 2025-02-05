@@ -276,22 +276,23 @@ st.write("---")
 
 # The below if condition ensures that the user input field is not unnecessarily displayed in featues other than those listed in the conditioning. Do not remove
 if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wolfram Alpha Queries":
-    user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
-
-    if st.button("Send"):
-        if user_input:
-            st.session_state["chat_history"].append(("You", user_input))
-            if feature == "Wikipedia Search":
-                response = search_wikipedia(user_input)
-            elif feature == "Wolfram Alpha Queries":
-                response = query_wolfram_alpha(user_input)
-            elif feature == "General Chat":
-                response = query_google_gemini(user_input, st.session_state["context"])
-            else:
-                response = "Invalid feature."
-            st.session_state["chat_history"].append(("S.A.N.A", response))
-            st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-            st.experimental_rerun()
+    
+    with st.form("InputForm"):
+        user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
+        if st.form_submit_button("Send"):
+            if user_input:
+                st.session_state["chat_history"].append(("You", user_input))
+                if feature == "Wikipedia Search":
+                    response = search_wikipedia(user_input)
+                elif feature == "Wolfram Alpha Queries":
+                    response = query_wolfram_alpha(user_input)
+                elif feature == "General Chat":
+                    response = query_google_gemini(user_input, st.session_state["context"])
+                else:
+                    response = "Invalid feature."
+                st.session_state["chat_history"].append(("S.A.N.A", response))
+                st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
+                st.experimental_rerun()
 
 #####################################
 #  File and Image Processing Features
