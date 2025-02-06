@@ -321,14 +321,14 @@ if feature == "Image Description":
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
     if uploaded_image:
         image = Image.open(uploaded_image)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+        st.image(image, caption="Uploaded Image", use_container_width=True)
         description = describe_image(image)
         st.markdown(f"**🖼️ Description:** {description}")
 
     captured_image = st.camera_input("Take a picture")
     if captured_image:
         image = Image.open(captured_image)
-        st.image(image, caption="Captured Image", use_column_width=True)
+        st.image(image, caption="Captured Image", use_container_width=True)
         description = describe_image(image)
         st.markdown(f"**🖼️ Description:** {description}")
 
@@ -340,7 +340,7 @@ if feature == "Image Generation":
             with st.spinner("Generating image..."):
                 generated_img = generate_image(prompt)
                 if generated_img:
-                    st.image(generated_img, caption="🖼️ AI-Generated Image", use_column_width=True)
+                    st.image(generated_img, caption="🖼️ AI-Generated Image", use_container_width=True)
                 else:
                     st.error("Failed to generate image. Try a different prompt.")
 
@@ -351,7 +351,7 @@ if feature == "Image OCR":
 
     if uploaded_image or camera_image:
         image = Image.open(uploaded_image or camera_image)
-        st.image(image, caption="Selected Image", use_column_width=True)
+        st.image(image, caption="Selected Image", use_container_width=True)
 
         extracted_text = image_ocr(image)
         st.text_area("Extracted Text", extracted_text, height=150)
@@ -362,21 +362,21 @@ if feature == "Image Filtering":
     uploaded_image = st.file_uploader("Upload an image to apply filters", type=["jpg", "png", "jpeg"])
     if uploaded_image:
         image = Image.open(uploaded_image)
-        st.image(image, caption="Original Image", use_column_width=True)
+        st.image(image, caption="Original Image", use_container_width=True)
         filter_option = st.selectbox("Choose a filter", ["None", "BLUR", "CONTOUR", "DETAIL"])
         if st.button("Apply Filter"):
             if filter_option != "None":
                 filtered_image = apply_filter(image, filter_option)
-                st.image(filtered_image, caption=f"Filtered Image ({filter_option})", use_column_width=True)
+                st.image(filtered_image, caption=f"Filtered Image ({filter_option})", use_container_width=True)
             else:
-                st.image(image, caption="No Filter Applied", use_column_width=True)
+                st.image(image, caption="No Filter Applied", use_container_width=True)
 
 # Enhanced Image Segmentation
 if feature == "Image Segmentation":
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
     if uploaded_image:
         image = Image.open(uploaded_image)
-        st.image(image, caption="Original Image", use_column_width=True)
+        st.image(image, caption="Original Image", use_container_width=True)
 
         extracted_region = segment_and_extract(image)
-        st.image(extracted_region, caption="Extracted Region", use_column_width=True)
+        st.image(extracted_region, caption="Extracted Region", use_container_width=True)
