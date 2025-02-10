@@ -271,7 +271,7 @@ for sender, message in st.session_state["chat_history"]:
     if sender == "You":
         st.markdown(f"**🧑‍💻 You:** {message}")
     else:
-        st.markdown(f"<b>S.A.N.A:</b> {message}", unsafe_allow_html=False)
+        st.markdown(f"<b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
 st.write("---")
 
 # The below if condition ensures that the user input field is not unnecessarily displayed in featues other than those listed in the conditioning. Do not remove
