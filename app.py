@@ -18,7 +18,7 @@ import io
 # For OCR
 import pytesseract
 
-# For segmentation (caching the model to avoid re-loading)
+# (Torch and torchvision imports are no longer needed for segmentation, but kept in case you use them elsewhere)
 import torch
 from torchvision import models, transforms
 
@@ -174,46 +174,27 @@ def apply_filter(image, filter_type="BLUR"):
     else:
         return image
 
-# 3. Image Segmentation using a pre-trained DeepLabV3 model with MobileNetV3
-@st.cache_resource
-def load_segmentation_model():
-    model_seg = models.segmentation.deeplabv3_mobilenet_v3_large(pretrained=True).eval()
-    return model_seg
-
-segmentation_model = load_segmentation_model()
-
+# 3. Image Segmentation using a Hugging Face API model
 def segment_and_extract(image):
-    preprocess = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    """
+    Uses NVIDIA's segformer-b0-finetuned-ade-512-512 from Hugging Face for segmentation.
+    The function sends the image (base64-encoded) along with a parameter to visualize the segmentation.
+    If successful, it returns the segmented image as a PIL Image.
+    """
+    url = "https://api-inference.huggingface.co/models/nvidia/segformer-b0-finetuned-ade-512-512"
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+    buffered = io.BytesIO()
+    image.save(buffered, format="JPEG")
+    encoded_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    payload = {"inputs": encoded_image, "parameters": {"visualize": True}}
     
-    input_tensor = preprocess(image).unsqueeze(0)
-
-    with torch.no_grad():
-        output = segmentation_model(input_tensor)['out'][0]
-    
-    output_predictions = output.argmax(0).byte().cpu().numpy()
-
-    # Create an empty mask (black background)
-    mask = np.zeros_like(output_predictions, dtype=np.uint8)
-
-    # Pick a class (for example, the largest segmented area)
-    main_class = np.bincount(output_predictions.flatten()).argmax()
-
-    # Extract only the main class region
-    mask[output_predictions == main_class] = 255  
-
-    # Convert to 3-channel for image masking
-    mask_3channel = np.stack([mask] * 3, axis=-1)
-
-    # Convert PIL image to NumPy array
-    image_np = np.array(image)
-
-    # Apply mask: Keeps only the segmented part, sets other areas to black
-    extracted = np.where(mask_3channel == 255, image_np, 0)
-
-    return extracted
+    response = requests.post(url, headers=headers, json=payload)
+    if "image" in response.headers.get("Content-Type", ""):
+        segmented_image = Image.open(io.BytesIO(response.content))
+        return segmented_image
+    else:
+        logging.error("Segmentation model did not return an image. Response: " + str(response.json()))
+        return None
 
 #####################################
 #          Streamlit UI             #
@@ -253,7 +234,6 @@ with st.sidebar:
         st.session_state["pdf_summary_done"] = False
         st.rerun()
 
-
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
 if "context" not in st.session_state:
@@ -274,9 +254,8 @@ for sender, message in st.session_state["chat_history"]:
             st.write(message)
 st.write("---")
 
-# The below if condition ensures that the user input field is not unnecessarily displayed in features other than those listed.
-if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wolfram Alpha Queries":
-    
+# Display the input field for relevant features
+if feature in ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"]:
     with st.form("InputForm"):
         user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
         if st.form_submit_button("Send"):
@@ -346,11 +325,9 @@ if feature == "Image Generation":
 if feature == "Image OCR":
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
     camera_image = st.camera_input("Capture an image")
-
     if uploaded_image or camera_image:
         image = Image.open(uploaded_image or camera_image)
         st.image(image, caption="Selected Image", use_container_width=True)
-
         extracted_text = image_ocr(image)
         st.text_area("Extracted Text", extracted_text, height=150)
 
@@ -368,12 +345,14 @@ if feature == "Image Filtering":
             else:
                 st.image(image, caption="No Filter Applied", use_container_width=True)
 
-# Enhanced Image Segmentation
+# Enhanced Image Segmentation using Hugging Face API
 if feature == "Image Segmentation":
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
     if uploaded_image:
         image = Image.open(uploaded_image)
         st.image(image, caption="Original Image", use_container_width=True)
-
-        extracted_region = segment_and_extract(image)
-        st.image(extracted_region, caption="Extracted Region", use_container_width=True)
+        segmented_image = segment_and_extract(image)
+        if segmented_image:
+            st.image(segmented_image, caption="Segmented Image", use_container_width=True)
+        else:
+            st.error("Segmentation failed. Please try again or use a different image.")
