@@ -251,7 +251,7 @@ with st.sidebar:
         st.session_state["chat_history"] = []
         st.session_state["context"] = ""
         st.session_state["pdf_summary_done"] = False
-        st.experimental_rerun()
+        st.rerun()
 
 
 if "chat_history" not in st.session_state:
@@ -292,7 +292,7 @@ if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wol
                     response = "Invalid feature."
                 st.session_state["chat_history"].append(("S.A.N.A", response))
                 st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-                st.experimental_rerun()
+                st.rerun()
 
 #####################################
 #  File and Image Processing Features
@@ -311,7 +311,7 @@ if feature == "PDF/TXT Summary":
             st.session_state["chat_history"].append(("S.A.N.A", summary))
             st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"
             st.session_state["pdf"] = uploaded_file
-            st.experimental_rerun()
+            st.rerun()
          st.markdown(f"**📜 Summary:** {st.session_state['chat_history'][-1][1]}")
 
 # Image Description
