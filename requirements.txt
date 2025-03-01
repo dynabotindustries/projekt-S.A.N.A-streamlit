@@ -6,6 +6,3 @@ PyPDF2
 pytesseract
 requests
 pillow
-torch
-torchvision
-matplotlib
