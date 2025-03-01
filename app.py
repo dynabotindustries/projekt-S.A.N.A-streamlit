@@ -215,7 +215,6 @@ def segment_and_extract(image):
 
     return extracted
 
-
 #####################################
 #          Streamlit UI             #
 #####################################
@@ -251,9 +250,8 @@ with st.sidebar:
     if st.button("Clear Chat History"):
         st.session_state["chat_history"] = []
         st.session_state["context"] = ""
-        # Also reset any flags, for example, the PDF summary flag:
         st.session_state["pdf_summary_done"] = False
-        st.rerun()
+        st.experimental_rerun()
 
 
 if "chat_history" not in st.session_state:
@@ -265,22 +263,24 @@ if "context" not in st.session_state:
 #      Chat History & Chat    #
 ###############################
 
-st.markdown("### 💬 Chat History")
+st.header("💬 Chat History")
 st.write("---")
 for sender, message in st.session_state["chat_history"]:
     if sender == "You":
-        st.markdown(f"**🧑‍💻 You:** {message}")
+        with st.chat_message("user"):
+            st.write(message)
     else:
-        st.markdown(f"<b>S.A.N.A:</b> {message}", unsafe_allow_html=True)
+        with st.chat_message("assistant"):
+            st.write(message)
 st.write("---")
 
-# The below if condition ensures that the user input field is not unnecessarily displayed in featues other than those listed in the conditioning. Do not remove
+# The below if condition ensures that the user input field is not unnecessarily displayed in features other than those listed.
 if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wolfram Alpha Queries":
     
-    with st.form("InputForm"):    # Bundle following code in a form to trigger submit for enter
+    with st.form("InputForm"):
         user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
-        if st.form_submit_button("Send"):    # Create submit button (cumpulsory for st.form, ad is used as the send button)
-            if user_input: # Continue with user input as normal
+        if st.form_submit_button("Send"):
+            if user_input:
                 st.session_state["chat_history"].append(("You", user_input))
                 if feature == "Wikipedia Search":
                     response = search_wikipedia(user_input)
@@ -292,7 +292,7 @@ if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wol
                     response = "Invalid feature."
                 st.session_state["chat_history"].append(("S.A.N.A", response))
                 st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
-                st.rerun()
+                st.experimental_rerun()
 
 #####################################
 #  File and Image Processing Features
@@ -300,21 +300,19 @@ if feature == "General Chat" or feature == "Wikipedia Search" or feature == "Wol
 
 # PDF/TXT Summary
 if feature == "PDF/TXT Summary":
-    if "pdf" not in st.session_state:    # Check for pdf session variable
-        st.session_state["pdf"] = ""    # Create session variable to store last uploaded pdf
+    if "pdf" not in st.session_state:
+        st.session_state["pdf"] = ""
     uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
-    if uploaded_file:    # If user uploads a file
-         if uploaded_file != st.session_state["pdf"]:    # Check whether the file was already uploaded. Proceed if a new file is uploaded
-            st.session_state["chat_history"].append(("You", uploaded_file.name))    # Add file details to chat history as "You"
+    if uploaded_file:
+         if uploaded_file != st.session_state["pdf"]:
+            st.session_state["chat_history"].append(("You", uploaded_file.name))
             st.success("File uploaded successfully!")
             summary = process_uploaded_file(uploaded_file)
-            st.session_state["chat_history"].append(("S.A.N.A", summary))    # Add pdf summary as "SANA" output
-            st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"    # Add pdf and summary to session context
-            st.session_state["pdf"] = uploaded_file    # Set uploaded file to currently uploaded file to prevent processing it multiple times
-            st.rerun()    # Rerun page to reflect changes in chat history
-         st.markdown(f"**📜 Summary:** {st.session_state["chat_history"][-1][1]}")    # Seperately, show the summary if the uploaded file remains uploaded. Parse summary from chat history
-
-
+            st.session_state["chat_history"].append(("S.A.N.A", summary))
+            st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"
+            st.session_state["pdf"] = uploaded_file
+            st.experimental_rerun()
+         st.markdown(f"**📜 Summary:** {st.session_state['chat_history'][-1][1]}")
 
 # Image Description
 if feature == "Image Description":
@@ -355,7 +353,6 @@ if feature == "Image OCR":
 
         extracted_text = image_ocr(image)
         st.text_area("Extracted Text", extracted_text, height=150)
-
 
 # Enhanced Image Filtering
 if feature == "Image Filtering":
