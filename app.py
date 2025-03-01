@@ -18,10 +18,6 @@ import io
 # For OCR
 import pytesseract
 
-# (Torch and torchvision imports are no longer needed for segmentation, but kept in case you use them elsewhere)
-import torch
-from torchvision import models, transforms
-
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
 logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
@@ -174,28 +170,6 @@ def apply_filter(image, filter_type="BLUR"):
     else:
         return image
 
-# 3. Image Segmentation using a Hugging Face API model
-def segment_and_extract(image):
-    """
-    Uses NVIDIA's segformer-b0-finetuned-ade-512-512 from Hugging Face for segmentation.
-    The function sends the image (base64-encoded) along with a parameter to visualize the segmentation.
-    If successful, it returns the segmented image as a PIL Image.
-    """
-    url = "https://api-inference.huggingface.co/models/nvidia/segformer-b0-finetuned-ade-512-512"
-    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
-    buffered = io.BytesIO()
-    image.save(buffered, format="JPEG")
-    encoded_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    payload = {"inputs": encoded_image, "parameters": {"visualize": True}}
-    
-    response = requests.post(url, headers=headers, json=payload)
-    if "image" in response.headers.get("Content-Type", ""):
-        segmented_image = Image.open(io.BytesIO(response.content))
-        return segmented_image
-    else:
-        logging.error("Segmentation model did not return an image. Response: " + str(response.json()))
-        return None
-
 #####################################
 #          Streamlit UI             #
 #####################################
@@ -223,8 +197,7 @@ with st.sidebar:
         "Image Description", 
         "Image Generation",
         "Image OCR",
-        "Image Filtering",
-        "Image Segmentation"
+        "Image Filtering"
     ])
     
     # Clear History Button
@@ -344,15 +317,3 @@ if feature == "Image Filtering":
                 st.image(filtered_image, caption=f"Filtered Image ({filter_option})", use_container_width=True)
             else:
                 st.image(image, caption="No Filter Applied", use_container_width=True)
-
-# Enhanced Image Segmentation using Hugging Face API
-if feature == "Image Segmentation":
-    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
-    if uploaded_image:
-        image = Image.open(uploaded_image)
-        st.image(image, caption="Original Image", use_container_width=True)
-        segmented_image = segment_and_extract(image)
-        if segmented_image:
-            st.image(segmented_image, caption="Segmented Image", use_container_width=True)
-        else:
-            st.error("Segmentation failed. Please try again or use a different image.")
