@@ -178,9 +178,7 @@ def apply_filter(image, filter_type="BLUR"):
 html(                        # html to hide distracting elements
     """
     <script>
-        window.addEventListener('load', function() {
-            document.body.innerHTML = "";
-        });
+        document.body.innerHTML = "";
     </script>
     """
 )
