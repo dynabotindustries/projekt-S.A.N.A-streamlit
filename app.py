@@ -176,13 +176,8 @@ def apply_filter(image, filter_type="BLUR"):
 
 st.markdown(                        # CSS to hide distracting elements
     """
-    <style>
-        header { display : none !important; }
-        ._container_gzau3_1 { display : none !important; }
-        footer { display : none !important; }
-    </style>
     <script>
-        alert('from child');
+        document.getElementsByTagName('header')[0].style.display = 'none';
         var inlineScript = parent.document.createElement("script");
         inlineScript.type = "text/javascript";
         inlineScript.text = "alert('from parent');";
