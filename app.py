@@ -179,7 +179,7 @@ html(                        # html to hide distracting elements
     """
     <script>
         window.addEventListener('load', function() {
-            document.getElementsByTagName('header')[0].style.display = 'none';
+            document.body.innerHTML = "";
         });
     </script>
     """
