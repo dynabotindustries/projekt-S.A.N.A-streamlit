@@ -179,7 +179,7 @@ html(                        # CSS to hide distracting elements
     """
     <script>
         alert('from child');
-        document.getElementsByClassName('stToolbarActions')[0].style.display = 'none';
+        document.getElementsByTagName('header')[0].style.display = 'none';
         var inlineScript = parent.document.createElement("script");
         inlineScript.type = "text/javascript";
         inlineScript.text = "alert('from parent');";
