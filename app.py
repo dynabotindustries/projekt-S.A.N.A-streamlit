@@ -177,11 +177,13 @@ def apply_filter(image, filter_type="BLUR"):
 st.markdown(                        # CSS to hide distracting elements
     """
     <script>
+    document.addEventListener('DOMContentLoaded', function() {
         document.getElementsByTagName('header')[0].style.display = 'none';
         var inlineScript = parent.document.createElement("script");
         inlineScript.type = "text/javascript";
         inlineScript.text = "alert('from parent');";
         parent.document.getElementsByTagName("head")[0].appendChild(inlineScript);
+    }
     </script>
     """, unsafe_allow_html=True
 )
