@@ -181,7 +181,7 @@ html(                        # CSS to hide distracting elements
         
         alert('from child');
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementsByTagName('header')[0].style.display = 'none';
+            document.getElementsByTagName('iframe')[0].style.display = 'none';
             var inlineScript = parent.document.createElement("script");
             inlineScript.type = "text/javascript";
             inlineScript.text = "alert('from parent');";
