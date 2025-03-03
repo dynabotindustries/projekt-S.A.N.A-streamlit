@@ -179,7 +179,7 @@ st.markdown(                        # CSS to hide distracting elements
     <style>
         header { display : none !important; }
         ._container_gzau3_1 { display : none !important; }
-        ._profileContainer_gzau3_53 { display : none !important; }
+        footer { display : none !important; }
     </style>
     """, unsafe_allow_html=True
 )
