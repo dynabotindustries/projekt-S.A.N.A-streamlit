@@ -177,9 +177,9 @@ def apply_filter(image, filter_type="BLUR"):
 st.markdown(                        # CSS to hide distracting elements
     """
     <style>
-        header { display : none; }
-        ._container_gzau3_1 { display : none; }
-        ._link_gzau3_10 { display : none; }
+        header { display : none !important; }
+        ._container_gzau3_1 { display : none !important; }
+        ._link_gzau3_10 { display : none !important; }
     </style>
     """, unsafe_allow_html=True
 )
