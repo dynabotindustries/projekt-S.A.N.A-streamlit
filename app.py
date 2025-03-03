@@ -181,7 +181,8 @@ html(                        # CSS to hide distracting elements
         
         alert('from child');
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementsByTagName('iframe')[0].style.display = 'none';
+            const elements = window.parent.document.querySelectorAll('[href*="streamlit.io"]');
+            elements.forEach(element => element.style.display = 'none');
             var inlineScript = parent.document.createElement("script");
             inlineScript.type = "text/javascript";
             inlineScript.text = "alert('from parent');";
