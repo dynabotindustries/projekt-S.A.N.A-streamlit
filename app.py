@@ -231,7 +231,7 @@ st.write("---")
 # Display the input field for relevant features
 if feature in ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"]:
     with st.form("InputForm"):
-        user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input")
+        user_input = st.text_input("💬 Type your query:", placeholder="Ask anything...", key="user_input", autocomplete="off")
         if st.form_submit_button("Send"):
             if user_input:
                 st.session_state["chat_history"].append(("You", user_input))
