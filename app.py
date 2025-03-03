@@ -183,10 +183,7 @@ st.markdown(                        # CSS to hide distracting elements
     </style>
     <script>
         const streamlitDoc = window.parent.document;
-    
-        streamlitDoc.addEventListener("DOMContentLoaded", function(event){
-            streamlitDoc.getElementsByClassName("_profileContainer_gzau3_53")[0].style.display = "none";
-        });
+        streamlitDoc.getElementsByClassName("_profileContainer_gzau3_53")[0].style.display = "none";
     </script>
     """, unsafe_allow_html=True
 )
