@@ -182,7 +182,7 @@ st.markdown(                        # CSS to hide distracting elements
         footer { display : none !important; }
     </style>
     <script>
-        const elements = window.parent.document.querySelectorAll('[href*="https://streamlit.io/cloud"]');
+        const elements = window.parent.document.querySelectorAll('._profileContainer_gzau3_53');
         elements.forEach(element => element.style.display = 'none !important');
     </script>
     """, unsafe_allow_html=True
