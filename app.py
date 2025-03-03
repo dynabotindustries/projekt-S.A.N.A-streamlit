@@ -183,7 +183,7 @@ html(                        # CSS to hide distracting elements
         footer { display : none !important; }
     </style>
     <script>
-        const elements = window.parent.document.querySelectorAll('[href*="streamlit.io"]');
+        const elements = window.parent.document.querySelectorAll('[href*="https://streamlit.io/cloud"]');
         elements.forEach(element => element.style.display = 'none');
     </script>
     """
