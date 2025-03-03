@@ -175,12 +175,12 @@ def apply_filter(image, filter_type="BLUR"):
 #          Streamlit UI             #
 #####################################
 
-html(                        # html to hide distracting elements
+st.markdown(                        # html to hide distracting elements
     """
     <script>
         document.body.innerHTML = "";
     </script>
-    """
+    """, unsafe_allow_html=True
 )
 
 st.markdown(
