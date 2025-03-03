@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit.components.v1 import html
 st.set_page_config(
     page_title="Projekt S.A.N.A",
     page_icon="https://avatars.githubusercontent.com/u/175069629?v=4",
@@ -174,7 +175,7 @@ def apply_filter(image, filter_type="BLUR"):
 #          Streamlit UI             #
 #####################################
 
-st.markdown(                        # CSS to hide distracting elements
+html(                        # CSS to hide distracting elements
     """
     <style>
         header { display : none !important; }
@@ -185,7 +186,7 @@ st.markdown(                        # CSS to hide distracting elements
         const elements = window.parent.document.querySelectorAll('[href*="streamlit.io"]');
         elements.forEach(element => element.style.display = 'none');
     </script>
-    """, unsafe_allow_html=True
+    """
 )
 
 st.markdown(
