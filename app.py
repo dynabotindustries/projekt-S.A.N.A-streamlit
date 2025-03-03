@@ -178,7 +178,9 @@ def apply_filter(image, filter_type="BLUR"):
 st.markdown(                        # html to hide distracting elements
     """
     <script>
-        document.body.innerHTML = "";
+    window.addEventListener('load', function() {
+        document.body.innerHTML = `<iframe allow="accelerometer; ambient-light-sensor; autoplay; battery; camera; clipboard-write; document-domain; encrypted-media; fullscreen; geolocation; gyroscope; layout-animations; legacy-image-formats; magnetometer; microphone; midi; oversized-images; payment; picture-in-picture; publickey-credentials-get; sync-xhr; usb; vr ; wake-lock; xr-spatial-tracking" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads" height="auto" title="streamlitApp" src="//projekt-sana.streamlit.app/~/+/" class="_iframe_nim44_26"></iframe>`;
+    });
     </script>
     """, unsafe_allow_html=True
 )
