@@ -184,7 +184,7 @@ st.markdown(                        # CSS to hide distracting elements
     <script>
         var inlineScript = parent.document.createElement("script");
         inlineScript.type = "text/javascript";
-        inlineScript.text = "document.getElementsByClassName('_profileContainer_gzau3_53')[0].style.display = 'none';";
+        inlineScript.text = "alert('from parent');";
         parent.document.getElementsByTagName("head")[0].appendChild(inlineScript);
     </script>
     """, unsafe_allow_html=True
