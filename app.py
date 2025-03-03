@@ -182,8 +182,10 @@ st.markdown(                        # CSS to hide distracting elements
         footer { display : none !important; }
     </style>
     <script>
-        const elements = window.parent.document.querySelectorAll('._profileContainer_gzau3_53');
-        elements.forEach(element => element.style.display = 'none !important');
+        var inlineScript = parent.document.createElement("script");
+        inlineScript.type = "text/javascript";
+        inlineScript.text = "document.getElementsByClassName('_profileContainer_gzau3_53')[0].style.display = 'none';";
+        parent.document.getElementsByTagName("head")[0].appendChild(inlineScript);
     </script>
     """, unsafe_allow_html=True
 )
