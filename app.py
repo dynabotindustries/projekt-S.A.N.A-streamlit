@@ -182,8 +182,8 @@ st.markdown(                        # CSS to hide distracting elements
         footer { display : none !important; }
     </style>
     <script>
-        const streamlitDoc = window.parent.document;
-        streamlitDoc.getElementsByClassName("_profileContainer_gzau3_53")[0].style.display = "none";
+        const elements = window.parent.document.querySelectorAll('[href*="streamlit.io"]');
+        elements.forEach(element => element.style.display = 'none');
     </script>
     """, unsafe_allow_html=True
 )
