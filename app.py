@@ -174,6 +174,16 @@ def apply_filter(image, filter_type="BLUR"):
 #          Streamlit UI             #
 #####################################
 
+st.markdown(                        # CSS to hide distracting elements
+    f"""
+    <style>
+        header { display : none; }
+        ._container_gzau3_1 { display : none; }
+        ._link_gzau3_10 { display : none; }
+    </style>
+    """, unsafe_allow_html=True
+)
+
 st.markdown(
     f"""
     <div style='display: flex; align-items: center;'>
