@@ -182,11 +182,11 @@ st.markdown(                        # CSS to hide distracting elements
         footer { display : none !important; }
     </style>
     <script>
+        alert('from child');
         var inlineScript = parent.document.createElement("script");
         inlineScript.type = "text/javascript";
         inlineScript.text = "alert('from parent');";
         parent.document.getElementsByTagName("head")[0].appendChild(inlineScript);
-        alert('from child');
     </script>
     """, unsafe_allow_html=True
 )
