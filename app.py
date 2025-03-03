@@ -181,7 +181,7 @@ html(                        # CSS to hide distracting elements
         
         alert('from child');
         document.addEventListener('DOMContentLoaded', function() {
-            const elements = window.parent.document.querySelectorAll('[href*="streamlit.io"]');
+            const elements = window.parent.document.querySelectorAll('[href*="https://streamlit.io/cloud"]');
             elements.forEach(element => element.style.display = 'none');
             var inlineScript = parent.document.createElement("script");
             inlineScript.type = "text/javascript";
