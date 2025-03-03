@@ -178,12 +178,15 @@ def apply_filter(image, filter_type="BLUR"):
 html(                        # CSS to hide distracting elements
     """
     <script>
+        
         alert('from child');
-        document.getElementsByTagName('header')[0].style.display = 'none';
-        var inlineScript = parent.document.createElement("script");
-        inlineScript.type = "text/javascript";
-        inlineScript.text = "alert('from parent');";
-        parent.document.getElementsByTagName("head")[0].appendChild(inlineScript);
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementsByTagName('header')[0].style.display = 'none';
+            var inlineScript = parent.document.createElement("script");
+            inlineScript.type = "text/javascript";
+            inlineScript.text = "alert('from parent');";
+            parent.document.getElementsByTagName("head")[0].appendChild(inlineScript);
+        });
     </script>
     """
 )
