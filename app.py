@@ -181,6 +181,13 @@ st.markdown(                        # CSS to hide distracting elements
         ._container_gzau3_1 { display : none !important; }
         footer { display : none !important; }
     </style>
+    <script>
+        const streamlitDoc = window.parent.document;
+    
+        document.addEventListener("DOMContentLoaded", function(event){
+            streamlitDoc.getElementsByTagName("footer")[0].style.display = "none";
+        });
+    </script>
     """, unsafe_allow_html=True
 )
 
