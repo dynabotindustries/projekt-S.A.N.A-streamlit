@@ -208,17 +208,6 @@ with st.sidebar:
         st.session_state["pdf_summary_done"] = False
         st.rerun()
 
-    # Display old chats in the sidebar
-    if "old_chats" not in st.session_state:
-        st.session_state["old_chats"] = []
-    
-    with st.expander("Old Chats"):
-        for i, chat in enumerate(st.session_state["old_chats"]):
-            if st.button(f"Load Chat {i+1}"):
-                st.session_state["chat_history"] = chat["history"]
-                st.session_state["context"] = chat["context"]
-                st.rerun()
-
 if "chat_history" not in st.session_state:
     st.session_state["chat_history"] = []
 if "context" not in st.session_state:
@@ -258,10 +247,74 @@ if feature in ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"]:
                 st.session_state["context"] += f"User: {user_input}\nAssistant: {response}\n"
                 st.rerun()
 
-# Save chat history
-if st.button("Save Chat"):
-    st.session_state["old_chats"].append({
-        "history": st.session_state["chat_history"],
-        "context": st.session_state["context"]
-    })
-    st.success("Chat history saved!")
+#####################################
+#  File and Image Processing Features
+#####################################
+
+# PDF/TXT Summary
+if feature == "PDF/TXT Summary":
+    if "pdf" not in st.session_state:
+        st.session_state["pdf"] = ""
+    uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
+    if uploaded_file:
+         if uploaded_file != st.session_state["pdf"]:
+            st.session_state["chat_history"].append(("You", uploaded_file.name))
+            st.success("File uploaded successfully!")
+            summary = process_uploaded_file(uploaded_file)
+            st.session_state["chat_history"].append(("S.A.N.A", summary))
+            st.session_state["context"] += f"User: Summarize the uploaded PDF file. \nAssistant: {summary}\n"
+            st.session_state["pdf"] = uploaded_file
+            st.rerun()
+         st.markdown(f"**📜 Summary:** {st.session_state['chat_history'][-1][1]}")
+
+# Image Description
+if feature == "Image Description":
+    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+    if uploaded_image:
+        image = Image.open(uploaded_image)
+        st.image(image, caption="Uploaded Image", use_container_width=True)
+        description = describe_image(image)
+        st.markdown(f"**🖼️ Description:** {description}")
+
+    captured_image = st.camera_input("Take a picture")
+    if captured_image:
+        image = Image.open(captured_image)
+        st.image(image, caption="Captured Image", use_container_width=True)
+        description = describe_image(image)
+        st.markdown(f"**🖼️ Description:** {description}")
+
+# Image Generation
+if feature == "Image Generation":
+    prompt = st.text_input("🎨 Enter a prompt for the AI-generated image:")
+    if st.button("Generate Image"):
+        if prompt:
+            with st.spinner("Generating image..."):
+                generated_img = generate_image(prompt)
+                if generated_img:
+                    st.image(generated_img, caption="🖼️ AI-Generated Image", use_container_width=True)
+                else:
+                    st.error("Failed to generate image. Try a different prompt.")
+
+# Enhanced Image OCR
+if feature == "Image OCR":
+    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+    camera_image = st.camera_input("Capture an image")
+    if uploaded_image or camera_image:
+        image = Image.open(uploaded_image or camera_image)
+        st.image(image, caption="Selected Image", use_container_width=True)
+        extracted_text = image_ocr(image)
+        st.text_area("Extracted Text", extracted_text, height=150)
+
+# Enhanced Image Filtering
+if feature == "Image Filtering":
+    uploaded_image = st.file_uploader("Upload an image to apply filters", type=["jpg", "png", "jpeg"])
+    if uploaded_image:
+        image = Image.open(uploaded_image)
+        st.image(image, caption="Original Image", use_container_width=True)
+        filter_option = st.selectbox("Choose a filter", ["None", "BLUR", "CONTOUR", "DETAIL"])
+        if st.button("Apply Filter"):
+            if filter_option != "None":
+                filtered_image = apply_filter(image, filter_option)
+                st.image(filtered_image, caption=f"Filtered Image ({filter_option})", use_container_width=True)
+            else:
+                st.image(image, caption="No Filter Applied", use_container_width=True)
