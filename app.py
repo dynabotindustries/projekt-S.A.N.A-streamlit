@@ -28,7 +28,7 @@ logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
 #####################################
 
 try:
-    GENAI_API_KEY = ["AIzaSyABzyFOf6p7izi7VCWIb_Ypf-vZikqlh7o"]
+    GENAI_API_KEY = st.secrets["GENAI_API_KEY"]
     genai.configure(api_key=GENAI_API_KEY)
     system_prompt = "You are S.A.N.A (Secure Autonomous Non-Intrusive Assistant), a smart, privacy-respecting AI"
     model = genai.GenerativeModel(
