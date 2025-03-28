@@ -28,7 +28,7 @@ logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
 #####################################
 
 try:
-    GENAI_API_KEY = st.secrets["GENAI_API_KEY"]
+    GENAI_API_KEY = ["AIzaSyABzyFOf6p7izi7VCWIb_Ypf-vZikqlh7o"]
     genai.configure(api_key=GENAI_API_KEY)
     system_prompt = "You are S.A.N.A (Secure Autonomous Non-Intrusive Assistant), a smart, privacy-respecting AI"
     model = genai.GenerativeModel(
@@ -40,13 +40,13 @@ except KeyError:
     model = None
 
 try:
-    APP_ID = st.secrets["APP_ID"]
+    APP_ID = ["PHP8VP-Y7P8Y25TTW"]
     wolfram_client = wolframalpha.Client(APP_ID)
 except KeyError:
     st.error("Error: APP_ID not found in Streamlit secrets.")
     wolfram_client = None
 
-HF_API_KEY = st.secrets["HF_API_KEY"]
+HF_API_KEY = ["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"]
 HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
 HF_SUMMARY_MODEL = "facebook/bart-large-cnn"
 HF_GEN_MODEL = "stabilityai/stable-diffusion-2"
@@ -217,16 +217,53 @@ if "context" not in st.session_state:
 #      Chat History & Chat    #
 ###############################
 
-st.header("💬 Chat History")
-st.write("---")
-for sender, message in st.session_state["chat_history"]:
-    if sender == "You":
-        with st.chat_message("user"):
-            st.write(message)
+
+if "chat_histories" not in st.session_state:
+    st.session_state["chat_histories"] = {"Default": []}
+if "active_chat" not in st.session_state:
+    st.session_state["active_chat"] = "Default"
+
+st.sidebar.title("Chat Histories")
+
+
+def switch_chat(chat_name):
+    st.session_state["active_chat"] = chat_name
+
+for chat_name in st.session_state["chat_histories"]:
+    if st.sidebar.button(chat_name, key=f"switch_{chat_name}"):
+        switch_chat(chat_name)
+
+
+new_chat_name = st.sidebar.text_input("Enter new chat name:", "")
+if st.sidebar.button("Create New Chat"):
+    if new_chat_name and new_chat_name not in st.session_state["chat_histories"]:
+        st.session_state["chat_histories"][new_chat_name] = []
+        switch_chat(new_chat_name)
+    elif new_chat_name in st.session_state["chat_histories"]:
+        st.sidebar.warning("Chat name already exists. Choose a different name.")
     else:
-        with st.chat_message("assistant"):
-            st.write(message)
-st.write("---")
+        st.sidebar.warning("Please enter a valid chat name.")
+
+
+if st.sidebar.button("Clear All Chats"):
+    st.session_state["chat_histories"] = {"Default": []}
+    st.session_state["active_chat"] = "Default"
+
+st.title("Active Chat")
+st.subheader(f"Chat: {st.session_state['active_chat']}")
+
+
+active_chat_name = st.session_state["active_chat"]
+messages = st.session_state["chat_histories"].get(active_chat_name, [])
+if messages:
+    for i, message in enumerate(messages):
+        st.write(f"Message {i + 1}: {message}")
+else:
+    st.write("No messages in this chat yet.")
+
+
+
+
 
 # Display the input field for relevant features
 if feature in ["General Chat", "Wikipedia Search", "Wolfram Alpha Queries"]:
