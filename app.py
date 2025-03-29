@@ -36,7 +36,7 @@ except KeyError:
     model = None
 
 try:
-    APP_ID =  PHP8VP-Y7P8Y25TTW"
+    APP_ID =  "PHP8VP-Y7P8Y25TTW"
     wolfram_client = wolframalpha.Client(APP_ID)
 except KeyError:
     st.error("Error: APP_ID not found in Streamlit secrets.")
