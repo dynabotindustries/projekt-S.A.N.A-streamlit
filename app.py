@@ -24,7 +24,7 @@ logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
 #####################################
 
 try:
-    GENAI_API_KEY = st.secrets ["AIzaSyABzyFOf6p7izi7VCWIb_Ypf-vZikqlh7o"]
+    GENAI_API_KEY =  "AIzaSyABzyFOf6p7izi7VCWIb_Ypf-vZikqlh7o"
     genai.configure(api_key=GENAI_API_KEY)
     system_prompt = "You are S.A.N.A (Secure Autonomous Non-Intrusive Assistant), a smart, privacy-respecting AI"
     model = genai.GenerativeModel(
@@ -36,13 +36,13 @@ except KeyError:
     model = None
 
 try:
-    APP_ID = st.secrets [PHP8VP-Y7P8Y25TTW"]
+    APP_ID =  PHP8VP-Y7P8Y25TTW"
     wolfram_client = wolframalpha.Client(APP_ID)
 except KeyError:
     st.error("Error: APP_ID not found in Streamlit secrets.")
     wolfram_client = None
 
-HF_API_KEY = st.secrets ["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"]
+HF_API_KEY = "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"
 HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
 HF_SUMMARY_MODEL = "facebook/bart-large-cnn"
 HF_GEN_MODEL = "stabilityai/stable-diffusion-2"
