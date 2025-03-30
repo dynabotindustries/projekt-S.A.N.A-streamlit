@@ -199,6 +199,7 @@ with st.sidebar:
         "Image Generation",
         "Image OCR",
         "Image Filtering"
+        "About"
     ])
     
     # Clear History Button
@@ -318,3 +319,11 @@ if feature == "Image Filtering":
                 st.image(filtered_image, caption=f"Filtered Image ({filter_option})", use_container_width=True)
             else:
                 st.image(image, caption="No Filter Applied", use_container_width=True)
+if feature == "About":
+    st.title("About")
+    st.write("This app was developed by:")
+    st.write("- Ayan Gantayat")
+    st.write("- Anish Bhattacharya")
+    st.write("- Shaurya Bhandarkar")
+    st.write("- Kriday Moudgil")
+    st.write("- Anonymous")
