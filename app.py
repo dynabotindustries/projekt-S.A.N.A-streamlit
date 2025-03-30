@@ -198,7 +198,7 @@ with st.sidebar:
         "Image Description", 
         "Image Generation",
         "Image OCR",
-        "Image Filtering"
+        "Image Filtering",
         "About"
     ])
     
