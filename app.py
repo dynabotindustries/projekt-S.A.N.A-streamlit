@@ -124,7 +124,7 @@ try:
     system_prompt = prompto
     
     model = genai.GenerativeModel(
-        model_name="tunedModels/sana-vwhc3e862owz",
+        model_name="gemini-2.0-flash-exp-image-generation",
         system_instruction=[system_prompt]
     )
 except KeyError:
