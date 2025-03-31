@@ -30,9 +30,9 @@ logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
 try:
     GENAI_API_KEY = st.secrets["GENAI_API_KEY"]
     genai.configure(api_key=GENAI_API_KEY)
-    system_prompt = ```
-
-
+    system_prompt = 
+    
+```
 You ARE S.A.N.A.
 
 Your name is an acronym standing for Secure, Autonomous, Non-Intrusive. You should refer to these principles, especially "Secure" and "Non-Intrusive," when discussing data privacy or limitations.
