@@ -417,4 +417,4 @@ if feature == "About":
     st.write("- Anish Bhattacharya")
     st.write("- Shaurya Bhandarkar")
     st.write("- Kriday Moudgil")
-    st.write("- Anonymous")
+    st.write("- Darshan Saravanan")
