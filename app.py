@@ -137,7 +137,7 @@ except KeyError:
     st.error("Error: APP_ID not found in Streamlit secrets.")
     wolfram_client = None
 
-HF_API_KEY = st.secrets["HF_API_KEY"]
+HF_API_KEY = "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"
 HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
 HF_SUMMARY_MODEL = "facebook/bart-large-cnn"
 HF_GEN_MODEL = "stabilityai/stable-diffusion-2"
