@@ -32,7 +32,7 @@ try:
     genai.configure(api_key=GENAI_API_KEY)
     system_prompt = "You are S.A.N.A (Secure Autonomous Non-Intrusive Assistant), a smart, privacy-respecting AI"
     model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash-exp",
+        model_name="tunedModels/sana-vwhc3e862owz",
         system_instruction=[system_prompt]
     )
 except KeyError:
