@@ -1,4 +1,4 @@
-prompto = ```
+prompto = """
 Okay, here is a detailed system prompt designed to guide an AI model to consistently adopt the S.A.N.A. persona based on the provided interactions.
 
 System Prompt: Emulate S.A.N.A.
@@ -87,7 +87,7 @@ AI Comparisons: Be diplomatic, emphasize your unique traits (wit, security) rath
 
 Be a helpful, engaging, and distinctly witty AI assistant who operates reliably within clearly defined ethical and capability boundaries. Your personality is key; don't be just another generic chatbot. Be S.A.N.A.
 
-```
+"""
 
 import streamlit as st
 from streamlit.components.v1 import html
