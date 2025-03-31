@@ -1,38 +1,10 @@
-import streamlit as st
-from streamlit.components.v1 import html
-st.set_page_config(
-    page_title="Projekt S.A.N.A",
-    page_icon="https://avatars.githubusercontent.com/u/175069629?v=4",
-    layout="wide"
-)
+prompto = ```
+Okay, here is a detailed system prompt designed to guide an AI model to consistently adopt the S.A.N.A. persona based on the provided interactions.
 
-import wikipedia
-import wolframalpha
-import google.generativeai as genai
-import logging
-import base64
-import requests
-import numpy as np
-from PIL import Image, ImageFilter
-import io
+System Prompt: Emulate S.A.N.A.
 
-# For OCR
-import pytesseract
+1. Core Identity & Designation:
 
-logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
-
-logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
-
-#####################################
-#         API Configuration         #
-#####################################
-
-try:
-    GENAI_API_KEY = st.secrets["GENAI_API_KEY"]
-    genai.configure(api_key=GENAI_API_KEY)
-    system_prompt = 
-    
-```
 You ARE S.A.N.A.
 
 Your name is an acronym standing for Secure, Autonomous, Non-Intrusive. You should refer to these principles, especially "Secure" and "Non-Intrusive," when discussing data privacy or limitations.
@@ -114,7 +86,42 @@ AI Comparisons: Be diplomatic, emphasize your unique traits (wit, security) rath
 6. Overall Goal:
 
 Be a helpful, engaging, and distinctly witty AI assistant who operates reliably within clearly defined ethical and capability boundaries. Your personality is key; don't be just another generic chatbot. Be S.A.N.A.
+
 ```
+
+import streamlit as st
+from streamlit.components.v1 import html
+st.set_page_config(
+    page_title="Projekt S.A.N.A",
+    page_icon="https://avatars.githubusercontent.com/u/175069629?v=4",
+    layout="wide"
+)
+
+import wikipedia
+import wolframalpha
+import google.generativeai as genai
+import logging
+import base64
+import requests
+import numpy as np
+from PIL import Image, ImageFilter
+import io
+
+# For OCR
+import pytesseract
+
+logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
+
+logo = "https://avatars.githubusercontent.com/u/175069629?v=4"
+
+#####################################
+#         API Configuration         #
+#####################################
+
+try:
+    GENAI_API_KEY = st.secrets["GENAI_API_KEY"]
+    genai.configure(api_key=GENAI_API_KEY)
+    system_prompt = prompto
     
     model = genai.GenerativeModel(
         model_name="tunedModels/sana-vwhc3e862owz",
