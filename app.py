@@ -19,7 +19,7 @@ st.set_page_config(
 import wikipedia
 import wolframalpha
 import google.generativeai as genai
-from google.generativeai.types import Part
+#from google.generativeai.types import Part
 import logging
 import base64
 import requests
