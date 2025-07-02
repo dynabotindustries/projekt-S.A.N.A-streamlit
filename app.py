@@ -359,8 +359,7 @@ if feature == "Image Filtering":
 if feature == "About":
     st.title("About")
     st.write("This app was developed by:")
+    st.write("- Darshan Saravanan")
     st.write("- Ayan Gantayat")
     st.write("- Anish Bhattacharya")
     st.write("- Shaurya Bhandarkar")
-    st.write("- Kriday Moudgil")
-    st.write("- Darshan Saravanan")
