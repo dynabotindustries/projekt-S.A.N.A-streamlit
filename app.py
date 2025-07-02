@@ -86,7 +86,7 @@ except KeyError:
 HF_API_KEY = "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"
 HF_IMAGE_MODEL = "Salesforce/blip-image-captioning-large"
 HF_SUMMARY_MODEL = "facebook/bart-large-cnn"
-HF_GEN_MODEL = "stabilityai/stable-diffusion-2"
+HF_GEN_MODEL = 'google/pix2struct-base' #"stabilityai/stable-diffusion-2"
 
 #####################################
 #          Core Functions           #
