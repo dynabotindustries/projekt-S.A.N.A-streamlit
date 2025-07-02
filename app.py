@@ -149,22 +149,17 @@ def process_uploaded_file(uploaded_file):
         return "Error processing the file."
 
 def describe_image(image):
-    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
-    buffered = io.BytesIO()
-    image.save(buffered, format="JPEG")
-    encoded_image = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    payload = {"inputs": encoded_image}
-    
-    try:
-        response = requests.post(
-            f"https://api-inference.huggingface.co/models/{HF_IMAGE_MODEL}",
-            headers=headers,
-            json=payload
-        )
-        return response.json()[0]['generated_text']
-    except Exception as e:
-        logging.error(f"Image description error: {e}")
-        return "Error describing the image."
+      response = client.models.generate_content(
+    model='gemini-2.5-flash',
+    contents=[
+      types.Part.from_bytes(
+        data=image_bytes,
+        mime_type='image/jpeg',
+      ),
+      'Caption this image.'
+    ]
+  )
+
 
 def generate_image(prompt):
     headers = {"Authorization": f"Bearer {HF_API_KEY}"}
