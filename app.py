@@ -156,8 +156,8 @@ def describe_image(image):
         response = model.generate_content(["Describe this image.", image])
         return response.text
     except Exception as e:
-        logging.error(f"Gemini Vision image description error: {e}")
-        return "Error describing the image with Gemini Vision."
+        logging.error(f"Image description error: {e}")
+        return "Error describing the image."
 
 def generate_image(prompt):
     headers = {"Authorization": f"Bearer {HF_API_KEY}"}
