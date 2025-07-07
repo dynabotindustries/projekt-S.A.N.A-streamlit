@@ -355,4 +355,4 @@ if feature == "About":
     st.write("- Darshan Saravanan")
     st.write("- Ayan Gantayat")
     st.write("- Anish Bhattacharya")
-    st.write("- Shaurya Bhandarkar")
+    st.write("- Shourya Bhandarkar")
